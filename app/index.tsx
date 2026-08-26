@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { ScrollView, View, Text, Pressable, Platform, Image } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
@@ -11,39 +10,14 @@ import Animated, {
 import { useAuth } from "../lib/auth-context";
 import BootScreen from "../components/BootScreen";
 
-// How long the seal stays up, at minimum, on a cold start.
-//
-// The boot screen used to render only while the session probe was in
-// flight, which on the office's connection is a handful of frames — the
-// mark flashed past and the app appeared to open onto a half-drawn
-// dashboard. Chambers asked for it to hold. Two seconds is long enough to
-// read the wordmark and short enough that nobody waits for it.
-const BOOT_HOLD_MS = 2000;
-
-// Module scope, so it survives remounts but not a cold start: the hold
-// belongs to launching the app. Signing out lands back on this route, and
-// replaying the boot sequence there would read as the app restarting.
-let bootHoldDone = false;
-
 export default function Home() {
   const { status } = useAuth();
-  const [holding, setHolding] = useState(!bootHoldDone);
 
-  useEffect(() => {
-    if (bootHoldDone) return;
-    const t = setTimeout(() => {
-      bootHoldDone = true;
-      setHolding(false);
-    }, BOOT_HOLD_MS);
-    return () => clearTimeout(t);
-  }, []);
-
-  // Boot order: the native splash covers font loading, then the animated
-  // BootScreen carries the same seal for its two seconds — and longer if
-  // the session probe hasn't answered by then. Signed-in users skip the
-  // marketing page entirely and land on their workspace; guests get the
-  // landing.
-  if (status === "loading" || holding) {
+  // Boot order: the native splash covers font loading; if the session
+  // probe is still in flight after that (slow network), the animated
+  // BootScreen takes over. Signed-in users skip the marketing page
+  // entirely and land on their workspace; guests get the landing.
+  if (status === "loading") {
     return <BootScreen />;
   }
   if (status === "authenticated") {

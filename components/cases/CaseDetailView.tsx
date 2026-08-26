@@ -14,24 +14,16 @@ import { Feather, FontAwesome } from "@expo/vector-icons";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import {
   partnerGetCase,
-  partnerGetNoticeTemplate,
   partnerUpdateCase,
   partnerDeleteCase,
   ApiError,
   type PartnerCase,
 } from "../../lib/api";
-import { openWhatsAppNotice } from "../../lib/whatsapp";
 import { useDeleteRequestFallback } from "../useDeleteRequestFallback";
-import { useAuth } from "../../lib/auth-context";
 import { DateField, formatDateForDisplay } from "../CaseFields";
 import StatusCombobox from "./StatusCombobox";
 import DocumentsPanel from "./DocumentsPanel";
 import DisposePanel from "./DisposePanel";
-import DisposalFields, {
-  EMPTY_DISPOSAL,
-  disposalPayload,
-  type DisposalRecord,
-} from "./DisposalFields";
 import CnrChip from "../CnrChip";
 
 // The whole case dossier as an embeddable view — the [id] route wraps it
@@ -54,22 +46,6 @@ export default function CaseDetailView({
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  // The office's WhatsApp notice wording. Fetched once per mount, not per
-  // matter — it belongs to the chambers, not the case. Blank falls back to
-  // the bundled bilingual default inside renderNotice.
-  const [template, setTemplate] = useState("");
-
-  useEffect(() => {
-    let alive = true;
-    partnerGetNoticeTemplate()
-      .then((r) => {
-        if (alive) setTemplate(r.template);
-      })
-      .catch(() => undefined);
-    return () => {
-      alive = false;
-    };
-  }, []);
 
   const load = useCallback(async () => {
     if (!caseId) return;
@@ -149,7 +125,6 @@ export default function CaseDetailView({
                 caseId={data.case.id}
                 initialDate={data.case.nextHearingDate?.slice(0, 10) || ""}
                 initialStatus={data.case.status || "Filed"}
-                alreadyDisposed={Boolean(data.case.disposedAt)}
                 onSaved={(updated) =>
                   setData((prev) =>
                     prev ? { ...prev, case: updated } : prev
@@ -162,7 +137,6 @@ export default function CaseDetailView({
               <ContactCard
                 c={data.case}
                 officeName={data.officeName}
-                template={template}
               />
             </Animated.View>
 
@@ -533,31 +507,18 @@ function UpdateHearingCard({
   caseId,
   initialDate,
   initialStatus,
-  alreadyDisposed,
   onSaved,
 }: {
   caseId: string;
   initialDate: string;
   initialStatus: string;
-  /** Already in the archive — the record is edited from DisposePanel below. */
-  alreadyDisposed: boolean;
   onSaved: (c: PartnerCase) => void;
 }) {
-  const { isPartnerAdmin } = useAuth();
   const [date, setDate] = useState(initialDate);
   const [status, setStatus] = useState(initialStatus);
-  const [disposal, setDisposal] = useState<DisposalRecord>(EMPTY_DISPOSAL);
   const [saving, setSaving] = useState(false);
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
-  // Disposing is admin-only server-side; offer the request flow rather
-  // than a dead-end 403, exactly as Hearing Track does.
-  const { offerDeleteRequest, deleteRequestSheet } = useDeleteRequestFallback();
-
-  // Closing a matter from here is the same decision Hearing Track makes,
-  // so it takes the same record. Not shown for a matter already in the
-  // archive — DisposePanel further down owns editing that.
-  const isDisposing = status.trim() === "Disposed" && !alreadyDisposed;
 
   const dirty = date !== initialDate || status !== initialStatus;
 
@@ -568,13 +529,10 @@ function UpdateHearingCard({
       const res = await partnerUpdateCase(caseId, {
         nextHearingDate: date || null,
         status,
-        ...disposalPayload(isDisposing ? status : "", disposal),
       });
       onSaved(res.case);
-      setDisposal(EMPTY_DISPOSAL);
       setSavedAt(Date.now());
     } catch (err) {
-      if (offerDeleteRequest(err)) return;
       setError(err instanceof ApiError ? err.message : "Couldn't save");
     } finally {
       setSaving(false);
@@ -626,48 +584,6 @@ function UpdateHearingCard({
           value={status}
           onChange={setStatus}
         />
-
-        {/* Setting a matter to Disposed closes it, and the disposal note
-            belongs at the moment that's decided — not on a separate trip
-            further down the page. This panel never had it, which is why
-            choosing "Disposed" here recorded a status and nothing else. */}
-        {isDisposing ? (
-          isPartnerAdmin ? (
-            <View
-              className="rounded-xl px-3.5 py-3"
-              style={{
-                backgroundColor: "#faf6ee",
-                borderWidth: 1,
-                borderColor: "#e3d9c0",
-              }}
-            >
-              <Text
-                className="text-[10px] uppercase mb-2 text-app-copper-deep"
-                style={{ fontFamily: "DMMono-Medium", letterSpacing: 1.8 }}
-              >
-                Disposal details
-              </Text>
-              <DisposalFields
-                value={disposal}
-                onChange={setDisposal}
-                compact
-              />
-            </View>
-          ) : (
-            <View
-              className="rounded-md px-3.5 py-2.5"
-              style={{ backgroundColor: "#faf6ee" }}
-            >
-              <Text
-                className="text-[12.5px]"
-                style={{ fontFamily: "Manrope", color: "#4d4538" }}
-              >
-                Only the office admin can dispose a matter. Save and
-                you&rsquo;ll be offered a request for them to review.
-              </Text>
-            </View>
-          )
-        ) : null}
       </View>
 
       {error ? (
@@ -712,8 +628,6 @@ function UpdateHearingCard({
           </Text>
         )}
       </Pressable>
-
-      {deleteRequestSheet}
     </View>
   );
 }
@@ -723,12 +637,9 @@ function UpdateHearingCard({
 function ContactCard({
   c,
   officeName,
-  template,
 }: {
   c: PartnerCase;
   officeName: string;
-  /** The office's WhatsApp notice template; "" falls back to the default. */
-  template: string;
 }) {
   const hasAny = c.clientName || c.clientPhone || c.clientWhatsapp || c.clientAddress;
 
@@ -744,12 +655,62 @@ function ContactCard({
     }
   }
 
-  function openWhatsApp() {
-    // The office's own bilingual template, filled from the case record
-    // this view is currently showing — so the message quotes the date and
-    // status that were just saved, and reads identically to the one
-    // Hearing Track sends for the same matter.
-    void openWhatsAppNotice(c, officeName, template);
+  async function openWhatsApp() {
+    const raw = (c.clientWhatsapp || c.clientPhone).replace(/\D/g, "");
+    if (!raw) return;
+    const wa = raw.length === 10 ? `91${raw}` : raw;
+
+    const dateStr = c.nextHearingDate
+      ? new Date(c.nextHearingDate).toLocaleDateString("en-IN", {
+          weekday: "long",
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        })
+      : "the date communicated separately";
+
+    const venue = [c.courtName, c.courtPlace].filter(Boolean).join(", ") ||
+      "the Hon'ble Court";
+    const office = officeName || "this office";
+    const matter = c.oppositeParty
+      ? `${c.clientName || "you"} vs ${c.oppositeParty}`
+      : c.caseNo;
+
+    const text = [
+      `Dear Mr./Ms. ${c.clientName || "Client"},`,
+      ``,
+      `Warm greetings from ${office}.`,
+      ``,
+      `This is to formally apprise you that the next hearing in your matter ${c.caseNo}` +
+        (c.oppositeParty ? ` (${matter})` : ``) +
+        ` has been scheduled on ${dateStr} before the ${venue}.`,
+      ``,
+      `You are kindly requested to ensure your presence on the said date and time, accompanied by all relevant documents previously discussed, so as to enable us to proceed with your matter without procedural complication. Non-attendance may give rise to adverse consequences, including the issuance of warrants or ex-parte orders, which we wish to avoid in your interest.`,
+      ``,
+      `For any clarification or to revisit the brief prior to the hearing, please feel free to contact our office at your convenience.`,
+      ``,
+      `Thank you for your continued cooperation and trust.`,
+      ``,
+      `Regards,`,
+      office,
+    ].join("\n");
+
+    const native = `whatsapp://send?phone=${wa}&text=${encodeURIComponent(text)}`;
+    const fallback = `https://wa.me/${wa}?text=${encodeURIComponent(text)}`;
+    try {
+      const can = await Linking.canOpenURL(native);
+      if (can) {
+        await Linking.openURL(native);
+      } else {
+        await Linking.openURL(fallback);
+      }
+    } catch {
+      try {
+        await Linking.openURL(fallback);
+      } catch {
+        Alert.alert("Couldn't open WhatsApp.");
+      }
+    }
   }
 
   return (

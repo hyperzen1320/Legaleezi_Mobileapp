@@ -570,37 +570,6 @@ export default function BoardDetail() {
     [data, load]
   );
 
-  const moveCardToBoard = useCallback(
-    async (
-      taskId: string,
-      toListId: string,
-      board: { id: string; title: string }
-    ) => {
-      const snapshot = data;
-      // The card is leaving this board, so take it off the canvas now
-      // rather than waiting for a refetch that would show it twice.
-      setData((prev) =>
-        prev ? { ...prev, tasks: prev.tasks.filter((t) => t.id !== taskId) } : prev
-      );
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      try {
-        // Top of the destination column, not the bottom. Handing a card to
-        // another board is telling someone about it; burying it under
-        // thirty others would be a strange way to do that.
-        await partnerMoveTask(taskId, { toListId, toIndex: 0 });
-      } catch (err) {
-        setData(snapshot);
-        Alert.alert(
-          "Couldn't move card",
-          err instanceof ApiError ? err.message : "Try again."
-        );
-        return;
-      }
-      Alert.alert("Moved", `The card is now on ${board.title}.`);
-    },
-    [data]
-  );
-
   const deleteCard = useCallback(
     async (task: PreviewTask) => {
       // Snapshot for rollback
@@ -772,15 +741,11 @@ export default function BoardDetail() {
       <CardActionsSheet
         visible={Boolean(activeCard)}
         cardTitle={activeCard?.title ?? ""}
-        currentBoardId={boardId}
         currentListId={activeCard?.listId ?? ""}
         lists={(data?.lists ?? []).map((l) => ({ id: l.id, title: l.title }))}
         onClose={() => setActiveCard(null)}
         onMoveToList={(toId) => {
           if (activeCard) moveCard(activeCard.id, toId);
-        }}
-        onMoveToBoard={(toId, board) => {
-          if (activeCard) void moveCardToBoard(activeCard.id, toId, board);
         }}
         onOpen={() => {
           if (activeCard) {

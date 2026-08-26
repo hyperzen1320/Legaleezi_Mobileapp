@@ -17,7 +17,7 @@
       "softwareKeyboardLayoutMode": "pan",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#f4ecda"
+        "backgroundColor": "#0e1a2b"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false

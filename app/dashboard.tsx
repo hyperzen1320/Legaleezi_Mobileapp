@@ -1,7 +1,7 @@
 import { useEffect } from "react";
+import { View, ActivityIndicator, Text } from "react-native";
 import { useRouter } from "expo-router";
 import { useAuth } from "../lib/auth-context";
-import BootScreen from "../components/BootScreen";
 
 // Post-login routing screen. Reads from AuthContext rather than re-
 // running getMe — the provider's boot probe is the single round-trip
@@ -11,10 +11,10 @@ import BootScreen from "../components/BootScreen";
 //   partner_admin / user → /(home)/home (Midnight Counsel shell)
 //   no session → /signin
 //
-// While it decides, it shows the SAME boot screen index does. This route
-// sits between the boot screen and the dashboard, so a bare spinner here
-// meant the seal was replaced by a loading circle for a frame and then by
-// the workspace — three screens where the office should see one.
+// The component itself renders the "Opening chambers…" spinner only
+// while the AuthContext probe is in flight, which is normally a single
+// frame after a fresh launch and zero frames when navigated to from
+// signin (already authenticated by then).
 export default function DashboardRouter() {
   const router = useRouter();
   const { status, isGlobalAdmin } = useAuth();
@@ -28,5 +28,15 @@ export default function DashboardRouter() {
     router.replace(isGlobalAdmin ? "/(admin)/dashboard" : "/(home)/home");
   }, [status, isGlobalAdmin, router]);
 
-  return <BootScreen />;
+  return (
+    <View className="flex-1 bg-paper items-center justify-center">
+      <ActivityIndicator color="#b68b3c" size="large" />
+      <Text
+        className="mt-4 font-mono text-[10px] uppercase text-ink-soft"
+        style={{ letterSpacing: 2.5 }}
+      >
+        Opening chambers…
+      </Text>
+    </View>
+  );
 }

@@ -42,36 +42,6 @@ export function todayLocal(): string {
   return new Date().toLocaleDateString("en-CA");
 }
 
-/**
- * The disposal half of a case PATCH — empty unless the status being set
- * is actually "Disposed".
- *
- * Lives here, beside the record it describes, because three screens send
- * it: the Hearing Track sheet, the Pending card, and the case dossier's
- * Update-hearing panel. It was a private helper in hearings.tsx, which is
- * why the dossier — the one place that never imported from there — set a
- * matter to Disposed and wrote no disposal record at all.
- *
- * Disposing is office-admin only on the server (it answers 403 with
- * `delete_request_required` for everyone else), so callers only show the
- * fields to the admin; this simply never puts them on the wire for any
- * other status.
- */
-export function disposalPayload(
-  status: string,
-  d: DisposalRecord
-): Record<string, unknown> {
-  if (status.trim() !== "Disposed") return {};
-  return {
-    // Default the recorded date to today rather than leaving the archive
-    // undated because someone skipped the field.
-    disposalDate: d.disposalDate || todayLocal(),
-    caStatus: d.caStatus.trim(),
-    disposalRemarks: d.disposalRemarks.trim(),
-    receivedByClient: d.receivedByClient,
-  };
-}
-
 export default function DisposalFields({
   value,
   onChange,

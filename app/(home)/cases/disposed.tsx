@@ -22,19 +22,18 @@ import {
   partnerBulkDeleteCases,
   partnerBulkRestoreCases,
   type DisposedCase,
-} from "../../lib/api";
-import { useAuth } from "../../lib/auth-context";
-import ExportSheet from "../../components/ExportSheet";
-import ConfirmSheet from "../../components/ConfirmSheet";
-import CnrChip from "../../components/CnrChip";
-import DisposalSummary from "../../components/cases/DisposalSummary";
-import { caseHref } from "../../components/cases/useCaseOrigin";
+} from "../../../lib/api";
+import { useAuth } from "../../../lib/auth-context";
+import ExportSheet from "../../../components/ExportSheet";
+import ConfirmSheet from "../../../components/ConfirmSheet";
+import CnrChip from "../../../components/CnrChip";
+import DisposalSummary from "../../../components/cases/DisposalSummary";
 import {
   CASE_EXPORT_COLUMNS,
   DISPOSED_EXPORT_DEFAULT_KEYS,
   exportCases,
-} from "../../lib/exports";
-import { useDeleteRequestFallback } from "../../components/useDeleteRequestFallback";
+} from "../../../lib/exports";
+import { useDeleteRequestFallback } from "../../../components/useDeleteRequestFallback";
 
 // The archive — closed matters, newest disposal first (server caps at
 // 500). Reopening moves the matter back to the vault by flipping its
@@ -459,9 +458,7 @@ export default function DisposedCases() {
                       : null
                   }
                   onOpen={() =>
-                    router.push(
-                      caseHref(item.id, "disposed") as never
-                    )
+                    router.push(`/(home)/cases/${item.id}` as never)
                   }
                 />
               )}

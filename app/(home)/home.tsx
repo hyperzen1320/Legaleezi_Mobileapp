@@ -293,19 +293,16 @@ function Hero({
         elevation: 6,
       }}
     >
-      {/* Brand mark, top-right corner.
-          The same ivory as the greeting and the name below it — #f5ebd6,
-          at full strength. White at 70% over this navy read as a dull
-          grey and looked like a third colour on a card that has two. */}
+      {/* Brand mark, top-right corner */}
       <View
         pointerEvents="none"
-        style={{ position: "absolute", right: 4, top: 8 }}
+        style={{ position: "absolute", right: 4, top: 8, opacity: 0.7 }}
       >
         <Image
           source={require("../../assets/logo.png")}
           style={{ width: 30, height: 63 }}
           resizeMode="contain"
-          tintColor="#f5ebd6"
+          tintColor="#ffffff"
         />
       </View>
 

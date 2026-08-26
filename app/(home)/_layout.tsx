@@ -22,7 +22,6 @@ export default function HomeLayout() {
   // regardless, so this is about not showing a door that doesn't open.
   const showCases = isFeatureEnabled(features, "cases");
   const showHearings = isFeatureEnabled(features, "hearings");
-  const showWorkflow = isFeatureEnabled(features, "workflow");
 
   // Two redirects this layout enforces:
   //  - no session → back to signin
@@ -65,9 +64,9 @@ export default function HomeLayout() {
         // Every tab opens at its own root.
         //
         // Several tabs are stacks that OTHER tabs push into: the Hearing
-        // Track, Today's Board and the disposed archive all open a case
-        // dossier inside the Cases stack, and the bell opens a board
-        // inside Work Flow. Nothing ever unwound those, so the
+        // Track and Today's Board open a case dossier inside the Cases
+        // stack, More opens the disposed archive there, the bell opens a
+        // board inside Work Flow. Nothing ever unwound those, so the
         // depth accumulated: a dossier opened from the diary on Monday
         // was still sitting under the Case Vault on Tuesday, and tapping
         // Case Vault pushed a second copy of the list on top of it —
@@ -99,12 +98,10 @@ export default function HomeLayout() {
           height: 66 + insets.bottom,
           paddingBottom: Math.max(insets.bottom, 12),
         },
-        // Five tabs again — Work Flow is used every day and shouldn't be
-        // two taps into a menu. 9.5px is what the bar ran at the last time
-        // it carried five, and keeps every label on one line on the
-        // narrowest phones.
+        // Four tabs instead of five leaves room to read them: 10.5px still
+        // keeps every label on one line on the narrowest phones.
         tabBarLabelStyle: {
-          fontSize: 9.5,
+          fontSize: 10.5,
           fontFamily: "DMMono-Medium",
           letterSpacing: 0.6,
           textTransform: "uppercase",
@@ -150,20 +147,6 @@ export default function HomeLayout() {
         }
       />
       <Tabs.Screen
-        name="workflow"
-        options={
-          showWorkflow
-            ? {
-                tabBarLabel: "Workflow",
-                // Same glyph the dashboard's Work Flow tile uses.
-                tabBarIcon: ({ color }) => (
-                  <Feather name="trello" size={20} color={color} />
-                ),
-              }
-            : { href: null }
-        }
-      />
-      <Tabs.Screen
         name="more"
         options={{
           tabBarLabel: "More",
@@ -184,21 +167,16 @@ export default function HomeLayout() {
           },
         }}
       />
-      {/* The disposed archive used to live at cases/disposed, inside the
-          Cases stack — the one More destination that wasn't a tab of its
-          own. Back could therefore only pop to the Case Vault, however
-          you got there. As a sibling route it goes back to More like
-          every other entry, and backBehavior does it for free. */}
-      <Tabs.Screen name="disposed" options={{ href: null }} />
       <Tabs.Screen name="clients" options={{ href: null }} />
       <Tabs.Screen name="courts" options={{ href: null }} />
       <Tabs.Screen name="ai" options={{ href: null }} />
       {/* Profile moved off the bar to the Dashboard's top-right, beside
-          the bell — a tab for a screen visited once a month was crowding
-          the ones used every day, and Work Flow has since taken the slot.
-          More → My Profile is still the second door. */}
+          the bell — a fifth tab for a screen visited once a month was
+          crowding the four that get used every day. More → My Profile is
+          still the second door. */}
       <Tabs.Screen name="profile" options={{ href: null }} />
       <Tabs.Screen name="users" options={{ href: null }} />
+      <Tabs.Screen name="workflow" options={{ href: null }} />
       <Tabs.Screen name="senior-desk" options={{ href: null }} />
       <Tabs.Screen name="activity" options={{ href: null }} />
       <Tabs.Screen name="settings" options={{ href: null }} />

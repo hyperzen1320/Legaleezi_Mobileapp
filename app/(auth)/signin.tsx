@@ -143,23 +143,19 @@ export default function SignIn() {
                   onChangeText={setPassword}
                   placeholder="••••••••"
                   required
+                  rightSlot={
+                    <Link href="/forgot-password" asChild>
+                      <Pressable hitSlop={6}>
+                        <Text
+                          className="font-mono text-[9px] uppercase text-brass-deep"
+                          style={{ letterSpacing: 2 }}
+                        >
+                          Forgot?
+                        </Text>
+                      </Pressable>
+                    </Link>
+                  }
                 />
-
-                {/* The way out when someone can't remember their password.
-                    It used to be a 9px uppercase "Forgot?" tucked into the
-                    field's right slot, level with the label — small enough
-                    that the office reported it as not being there. Its own
-                    line, readable, underlined: a link that looks like one. */}
-                <Link href="/forgot-password" asChild>
-                  <Pressable hitSlop={8} className="-mt-4 self-start active:opacity-50">
-                    <Text
-                      className="font-body text-[13px] text-brass-deep"
-                      style={{ textDecorationLine: "underline" }}
-                    >
-                      Forgot password?
-                    </Text>
-                  </Pressable>
-                </Link>
 
                 {/* Remember me */}
                 <Pressable

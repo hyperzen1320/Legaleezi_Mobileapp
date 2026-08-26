@@ -324,6 +324,7 @@ function EditPanel({
   const [designation, setDesignation] = useState(user.designation);
   const [phone, setPhone] = useState(user.phone);
 
+  const [resettingPwd, setResettingPwd] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [showPwd, setShowPwd] = useState(false);
 
@@ -337,7 +338,7 @@ function EditPanel({
     (!targetIsAdmin && roleLabel !== labelForRole(user.role)) ||
     designation !== user.designation ||
     phone !== user.phone ||
-    newPassword.length > 0;
+    (resettingPwd && newPassword.length > 0);
 
   async function save() {
     setError(null);
@@ -345,7 +346,7 @@ function EditPanel({
       setError("First name is required.");
       return;
     }
-    if (newPassword.length > 0 && newPassword.length < 8) {
+    if (resettingPwd && newPassword.length > 0 && newPassword.length < 8) {
       setError("Password must be at least 8 characters.");
       return;
     }
@@ -361,15 +362,13 @@ function EditPanel({
       if (!targetIsAdmin) {
         payload.role = roleKeyFromLabel(roleLabel);
       }
-      // Blank means "leave their password alone" — the field is always on
-      // screen, so it has to be safe to ignore.
-      if (newPassword.length > 0) {
+      if (resettingPwd && newPassword.length > 0) {
         payload.password = newPassword;
       }
       const res = await partnerUpdateUser(user.id, payload);
       onUpdated({ ...res.user, isYou: res.user.id === meId });
       setNewPassword("");
-      setShowPwd(false);
+      setResettingPwd(false);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Couldn't save");
     } finally {
@@ -508,39 +507,47 @@ function EditPanel({
           keyboardType="phone-pad"
         />
 
-        {/* Set a new password.
-            This used to be a two-step: an 11px uppercase copper "Reset
-            password" link that opened the field. Styled exactly like the
-            section headings around it, it read as a heading with a broken
-            input underneath — the office reported the password field as
-            missing. It is a field now, always, and blank leaves the
-            password untouched. */}
-        <View>
-          <Text
-            className="text-[10px] font-semibold uppercase text-app-fg-muted"
-            style={{ fontFamily: "DMMono-Medium", letterSpacing: 1.6 }}
+        {/* Reset password */}
+        {!resettingPwd ? (
+          <Pressable
+            onPress={() => setResettingPwd(true)}
+            className="self-start active:opacity-50"
           >
-            New password
-          </Text>
-          <View className="relative mt-1.5">
-            <TextInput
-              value={newPassword}
-              onChangeText={setNewPassword}
-              secureTextEntry={!showPwd}
-              autoCapitalize="none"
-              autoCorrect={false}
-              autoComplete="new-password"
-              placeholder="Leave blank to keep the current one"
-              placeholderTextColor="#a89c80"
-              className="rounded-md border bg-app-paper px-3.5 py-3 text-[15px] text-app-ink"
+            <Text
+              className="text-[11px] uppercase"
               style={{
                 fontFamily: "DMMono-Medium",
-                borderColor: "#e3d9c0",
-                letterSpacing: 0.5,
-                paddingRight: 64,
+                letterSpacing: 1.5,
+                color: "#8a5821",
               }}
-            />
-            {newPassword.length > 0 ? (
+            >
+              Reset password
+            </Text>
+          </Pressable>
+        ) : (
+          <View>
+            <Text
+              className="text-[10px] font-semibold uppercase text-app-fg-muted"
+              style={{ fontFamily: "DMMono-Medium", letterSpacing: 1.6 }}
+            >
+              New password
+            </Text>
+            <View className="relative mt-1.5">
+              <TextInput
+                value={newPassword}
+                onChangeText={setNewPassword}
+                secureTextEntry={!showPwd}
+                autoCapitalize="none"
+                autoCorrect={false}
+                autoComplete="new-password"
+                className="rounded-md border bg-app-paper px-3.5 py-3 text-[15px] text-app-ink"
+                style={{
+                  fontFamily: "DMMono-Medium",
+                  borderColor: "#e3d9c0",
+                  letterSpacing: 0.5,
+                  paddingRight: 64,
+                }}
+              />
               <Pressable
                 onPress={() => setShowPwd((v) => !v)}
                 className="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1.5 active:opacity-50"
@@ -557,15 +564,15 @@ function EditPanel({
                   {showPwd ? "Hide" : "Show"}
                 </Text>
               </Pressable>
-            ) : null}
+            </View>
+            <Text
+              className="mt-1.5 text-[11px]"
+              style={{ fontFamily: "Manrope", color: "#7a7060" }}
+            >
+              At least 8 characters. Share with the team member.
+            </Text>
           </View>
-          <Text
-            className="mt-1.5 text-[11px]"
-            style={{ fontFamily: "Manrope", color: "#7a7060" }}
-          >
-            At least 8 characters. Share it with the team member.
-          </Text>
-        </View>
+        )}
       </View>
 
       {error ? (

@@ -1052,26 +1052,6 @@ export async function partnerGetBoardFull(
 
 /* ─── Lists CRUD ─────────────────────────────────────────────────────── */
 
-export type BoardListSummary = {
-  id: string;
-  title: string;
-  sortOrder: number;
-};
-
-/**
- * Just the columns of a board — no tasks, no edges, no members. Used when
- * offering another board as the destination for a card; /full would drag
- * that board's entire contents across the wire to render a list of names.
- */
-export async function partnerListBoardLists(
-  boardId: string
-): Promise<{ lists: BoardListSummary[] }> {
-  return api<{ lists: BoardListSummary[] }>(
-    `/api/app/boards/${boardId}/lists`,
-    { method: "GET" }
-  );
-}
-
 export async function partnerCreateList(
   boardId: string,
   payload: { title: string }
@@ -1231,20 +1211,10 @@ export async function partnerDeleteTask(
   return api(`/api/app/tasks/${taskId}`, { method: "DELETE" });
 }
 
-/**
- * Move a card. The destination list may sit on ANOTHER board of the same
- * chambers — the server moves the card's boardId with it and answers with
- * where it ended up.
- */
 export async function partnerMoveTask(
   taskId: string,
   payload: { toListId: string; toIndex: number }
-): Promise<{
-  ok: true;
-  listId: string;
-  boardId: string;
-  sortOrder: number;
-}> {
+): Promise<{ ok: true; listId: string; sortOrder: number }> {
   return api(`/api/app/tasks/${taskId}/move`, {
     method: "POST",
     body: JSON.stringify(payload),

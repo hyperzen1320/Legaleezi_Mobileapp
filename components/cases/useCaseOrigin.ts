@@ -10,9 +10,9 @@ import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 // Hearing Track or the dashboard's Today's Board and pressing back
 // stranded you in the vault, several taps from the list you were reading.
 //
-// So the openers say where they came from and this resolves it. The Case
-// Vault itself passes nothing: it is the stack's own root, so plain
-// popping already lands on it.
+// So the openers say where they came from and this resolves it. Screens
+// inside the Cases stack (the vault itself, the disposed archive) pass
+// nothing: their own stack already pops correctly.
 
 export type CaseOrigin = {
   href: string;
@@ -23,7 +23,7 @@ export type CaseOrigin = {
 /** Query the case route reads: `?from=hearings&bucket=pending`, `?from=home`. */
 export function caseHref(
   id: string,
-  from?: "hearings" | "home" | "disposed",
+  from?: "hearings" | "home",
   bucket?: string
 ): string {
   const base = `/(home)/cases/${id}`;
@@ -36,9 +36,6 @@ export function caseHref(
 function resolveOrigin(from?: string, bucket?: string): CaseOrigin | null {
   if (from === "home") {
     return { href: "/(home)/home", label: "Dashboard" };
-  }
-  if (from === "disposed") {
-    return { href: "/(home)/disposed", label: "Disposed Cases" };
   }
   if (from === "hearings") {
     // Land back on the same tab of the diary, not whichever one it
