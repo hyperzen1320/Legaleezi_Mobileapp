@@ -106,7 +106,7 @@ The mobile app talks to the Legaleezi web backend. `lib/config.ts` resolves the 
 
 ```bash
 # dev against the live server instead of localhost:
-EXPO_PUBLIC_API_URL=https://legalezi.com npx expo start
+EXPO_PUBLIC_API_URL=https://legaleezi.com npx expo start
 
 # EAS builds bake it in via eas.json (preview + production profiles
 # already carry EXPO_PUBLIC_API_URL=https://legaleezi.com)
