@@ -1,6 +1,6 @@
 <div align="center">
 
-# 📱 Legalezi — Mobile
+# 📱 Legaleezi — Mobile
 
 ### _The advocate's pocket chambers._
 
@@ -89,8 +89,8 @@ Typography: **Crimson Pro** (display) · **Manrope** (body) · **DM Mono** (caps
 
 ### 1. Clone & install
 ```bash
-git clone https://github.com/hyperzen1320/LegalEasyMobileApp.git
-cd LegalEasyMobileApp
+git clone https://github.com/hyperzen1320/Legaleezi_Mobileapp.git
+cd Legaleezi_Mobileapp
 npm install
 ```
 
@@ -99,7 +99,7 @@ The mobile app talks to the Legalezi web backend. `lib/config.ts` resolves the b
 
 | Priority | Source | When it applies |
 |---|---|---|
-| 1️⃣ | `EXPO_PUBLIC_API_URL` env var | Production / staging — set to `https://legalezi.com` |
+| 1️⃣ | `EXPO_PUBLIC_API_URL` env var | Production / staging — set to `https://legaleezi.com` |
 | 2️⃣ | Expo dev server's LAN host (`hostUri` → port 3000) | Physical device on the same Wi-Fi as your laptop |
 | 3️⃣ | `http://10.0.2.2:3000` | Android emulator |
 | 4️⃣ | `http://localhost:3000` | iOS simulator |
@@ -109,7 +109,7 @@ The mobile app talks to the Legalezi web backend. `lib/config.ts` resolves the b
 EXPO_PUBLIC_API_URL=https://legalezi.com npx expo start
 
 # EAS builds bake it in via eas.json (preview + production profiles
-# already carry EXPO_PUBLIC_API_URL=https://legalezi.com)
+# already carry EXPO_PUBLIC_API_URL=https://legaleezi.com)
 ```
 
 > 🖥️ Local dev: run the web repo with `npm run dev` (binds `-H 0.0.0.0` so your phone can reach it over Wi-Fi).
