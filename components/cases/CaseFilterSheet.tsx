@@ -95,6 +95,23 @@ export default function CaseFilterSheet({
       return next;
     });
 
+  // A hearing-date range is a cause-list question, so it reads in date
+  // order — and, within a day, court by court in Court Hub order (the
+  // "Next hearing" sort) — the list and the file downloaded from it
+  // alike. Only the default order is switched; one the advocate picked
+  // deliberately stays.
+  const setDate = (key: "fromDate" | "toDate", v: string) =>
+    setDraft((prev) => {
+      const next = { ...prev };
+      if (v) {
+        next[key] = v;
+        if (!next.sort || next.sort === "recent") next.sort = "hearing";
+      } else {
+        delete next[key];
+      }
+      return next;
+    });
+
   const activeCount = countActive(draft);
 
   return (
@@ -223,14 +240,14 @@ export default function CaseFilterSheet({
                 <DateField
                   label="From"
                   value={draft.fromDate ?? ""}
-                  onChange={(v) => set("fromDate", v || undefined)}
+                  onChange={(v) => setDate("fromDate", v)}
                 />
               </View>
               <View className="flex-1">
                 <DateField
                   label="To"
                   value={draft.toDate ?? ""}
-                  onChange={(v) => set("toDate", v || undefined)}
+                  onChange={(v) => setDate("toDate", v)}
                 />
               </View>
             </View>

@@ -124,7 +124,7 @@ export default function NewPartner() {
               </Text>
               <Text className="mt-2 font-plex text-[13px] leading-[20px] text-admin-fg-muted">
                 Create a partner chambers and the partner-admin login. The
-                email is the user ID — must be unique across Legalezi.
+                email is the user ID — must be unique across Legaleezi.
               </Text>
             </View>
 

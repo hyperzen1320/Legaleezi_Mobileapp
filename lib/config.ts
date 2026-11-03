@@ -2,7 +2,7 @@ import Constants from "expo-constants";
 import { Platform } from "react-native";
 
 /**
- * Resolves the Legalezi backend base URL.
+ * Resolves the Legaleezi backend base URL.
  *
  * Priority:
  *  1. EXPO_PUBLIC_API_URL env var (production / staging)

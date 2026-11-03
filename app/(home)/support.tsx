@@ -142,7 +142,7 @@ export default function Support() {
             keyboardShouldPersistTaps="handled"
             keyboardDismissMode="on-drag"
           >
-            {/* Video tutorials — media library curated by the Legalezi team */}
+            {/* Video tutorials — media library curated by the Legaleezi team */}
             <Pressable
               onPress={() => openSection("/(home)/tutorials")}
               className="rounded-2xl p-4 flex-row items-center gap-3 active:opacity-90"
@@ -268,7 +268,7 @@ export default function Support() {
                   className="mt-1 text-[12.5px] text-app-fg-muted text-center"
                   style={{ fontFamily: "Manrope", lineHeight: 18 }}
                 >
-                  Your issue is with the Legalezi team. We&rsquo;ll be in touch
+                  Your issue is with the Legaleezi team. We&rsquo;ll be in touch
                   if we need more detail.
                 </Text>
                 <Pressable
@@ -414,7 +414,7 @@ export default function Support() {
                   onPress={() =>
                     Linking.openURL(
                       `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(
-                        "Legalezi support"
+                        "Legaleezi support"
                       )}`
                     ).catch(() => undefined)
                   }

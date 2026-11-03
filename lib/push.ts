@@ -9,7 +9,7 @@ import {
   partnerRevokePushToken,
 } from "./api";
 
-// Push notifications — the reason the Legalezi icon can carry a dot on
+// Push notifications — the reason the Legaleezi icon can carry a dot on
 // the home screen while the app is closed.
 //
 // Android only draws that dot for a notification the system has actually
@@ -164,7 +164,13 @@ export function useNotificationRouting(): void {
   useEffect(() => {
     const open = (data: Record<string, unknown> | undefined) => {
       if (!data) return;
-      if (data.kind === "chat" && typeof data.roomId === "string") {
+      // The room id becomes part of a route, so only a plain id is
+      // accepted — a crafted payload can't steer the app to another screen.
+      if (
+        data.kind === "chat" &&
+        typeof data.roomId === "string" &&
+        /^[A-Za-z0-9_-]{1,64}$/.test(data.roomId)
+      ) {
         router.push(`/(home)/senior-desk/${data.roomId}` as never);
         return;
       }

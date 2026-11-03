@@ -1,6 +1,6 @@
 // Per-chambers module switches, mirroring legaleasy/src/lib/features.ts.
 //
-// The global admin decides which parts of Legalezi an office can reach.
+// The global admin decides which parts of Legaleezi an office can reach.
 // Everything ships ON: a key that isn't in the map is enabled, which is
 // why no existing chambers changed when this arrived.
 //

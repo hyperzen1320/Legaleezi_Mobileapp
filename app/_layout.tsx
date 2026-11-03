@@ -48,10 +48,10 @@ import { AuthProvider } from "../lib/auth-context";
 import { applyOrientationPolicy } from "../lib/orientation";
 import { useNotificationRouting } from "../lib/push";
 
-// Hold the native splash (the brass seal on paper) until fonts are in,
-// then fade it straight into whatever index renders — no blank frame,
-// no second loading screen unless boot is genuinely slow (index shows
-// the animated BootScreen only while the session probe is in flight).
+// Hold the native splash (the Legaleezi logo on paper) until fonts are
+// in, then fade it into index — whose BootScreen draws the same logo in
+// the same place and holds it until 1.5s after launch, so the two read
+// as one launch screen.
 SplashScreen.preventAutoHideAsync().catch(() => {});
 SplashScreen.setOptions({ fade: true, duration: 240 });
 

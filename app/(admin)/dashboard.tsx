@@ -119,7 +119,7 @@ function TopBar({
             className="font-plex-mono-medium text-[10px] uppercase text-admin-accent"
             style={{ letterSpacing: 1.8 }}
           >
-            Legalezi · Admin
+            Legaleezi · Admin
           </Text>
           <Text className="mt-0.5 font-plex-bold text-[18px] text-admin-fg">
             Dashboard

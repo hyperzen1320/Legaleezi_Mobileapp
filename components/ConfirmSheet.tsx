@@ -14,6 +14,7 @@ export default function ConfirmSheet({
   title,
   message,
   confirmLabel = "Delete",
+  icon = "trash-2",
   busy = false,
   error = null,
 }: {
@@ -23,6 +24,8 @@ export default function ConfirmSheet({
   title: string;
   message: string;
   confirmLabel?: string;
+  // Shown in the badge and on the danger button.
+  icon?: keyof typeof Feather.glyphMap;
   busy?: boolean;
   // Optional inline failure (e.g. the delete call errored) shown above the
   // actions so the sheet can stay open for a retry.
@@ -41,7 +44,7 @@ export default function ConfirmSheet({
             className="h-11 w-11 items-center justify-center rounded-full"
             style={{ backgroundColor: "#f6dccd" }}
           >
-            <Feather name="trash-2" size={19} color="#c14a37" />
+            <Feather name={icon} size={19} color="#c14a37" />
           </View>
           <Text
             className="flex-1 text-[14px] leading-[21px] text-app-fg-soft"
@@ -94,7 +97,7 @@ export default function ConfirmSheet({
             {busy ? (
               <ActivityIndicator size="small" color="#ffffff" />
             ) : (
-              <Feather name="trash-2" size={14} color="#ffffff" />
+              <Feather name={icon} size={14} color="#ffffff" />
             )}
             <Text
               className="text-[13px]"

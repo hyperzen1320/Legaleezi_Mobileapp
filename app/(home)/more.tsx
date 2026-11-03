@@ -1,8 +1,18 @@
-import { ScrollView, View, Text, Pressable, Linking } from "react-native";
+import { useState } from "react";
+import {
+  Alert,
+  ScrollView,
+  View,
+  Text,
+  Pressable,
+  Linking,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
+import ConfirmSheet from "../../components/ConfirmSheet";
+import { ApiError, partnerCreateSupportTicket } from "../../lib/api";
 import { openSection } from "../../lib/navigation";
 import { useAuth } from "../../lib/auth-context";
 import { useChatUnread } from "../../lib/chat-unread";
@@ -23,15 +33,80 @@ type MoreItem = {
 
 export default function More() {
   const router = useRouter();
-  const { user, partner, isPartnerAdmin, logout, features } = useAuth();
+  const { user, partner, isPartnerAdmin, logout, logoutAllDevices, features } =
+    useAuth();
   const { unread } = useChatUnread();
   // Pending delete requests waiting on the admin. The singleton already
   // polls this partner-wide, so the count costs nothing extra here.
   const { count: pendingDeletes } = useNotificationCount();
+  const [confirmAll, setConfirmAll] = useState(false);
+  const [signingOutAll, setSigningOutAll] = useState(false);
+  const [signOutAllError, setSignOutAllError] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [requestingDelete, setRequestingDelete] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  // Google Play requires an in-app way to ask for an account to be
+  // deleted, for any app people can sign up in. The request lands in the
+  // Legaleezi team's support inbox (the same one Support → Report an issue
+  // feeds), who confirm with the advocate before deleting anything — an
+  // office admin's account carries the whole chambers with it.
+  async function onRequestDelete() {
+    if (!user) return;
+    setRequestingDelete(true);
+    setDeleteError(null);
+    try {
+      await partnerCreateSupportTicket({
+        subject: "Account deletion request",
+        category: "Other",
+        message: [
+          "Please delete my Legaleezi account and the personal data tied to it.",
+          "",
+          `Name: ${[user.firstName, user.lastName].filter(Boolean).join(" ")}`,
+          `Email: ${user.email}`,
+          `Role: ${isPartnerAdmin ? "Office admin" : "Office member"}`,
+          `Chambers: ${partner?.name ?? "—"}`,
+          "",
+          "Sent from the mobile app (More → Delete my account).",
+        ].join("\n"),
+      });
+      setConfirmDelete(false);
+      Alert.alert(
+        "Request sent",
+        `The Legaleezi team will contact you at ${user.email} to confirm before anything is deleted.`
+      );
+    } catch (err) {
+      setDeleteError(
+        err instanceof Error ? err.message : "Couldn't send the request. Try again."
+      );
+    } finally {
+      setRequestingDelete(false);
+    }
+  }
 
   async function onSignOut() {
     await logout();
     router.replace("/");
+  }
+
+  async function onSignOutAll() {
+    setSigningOutAll(true);
+    setSignOutAllError(null);
+    try {
+      await logoutAllDevices();
+      setConfirmAll(false);
+      router.replace("/");
+    } catch (err) {
+      // 404 = the server hasn't been updated with the endpoint yet.
+      setSignOutAllError(
+        err instanceof ApiError && err.status === 404
+          ? "Not available yet — this needs a server update that hasn't been deployed. Nothing changed: you're still signed in everywhere."
+          : err instanceof Error
+            ? err.message
+            : "Couldn't sign out of all devices. Try again."
+      );
+      setSigningOutAll(false);
+    }
   }
 
   const tools: MoreItem[] = [
@@ -157,6 +232,24 @@ export default function More() {
       icon: "log-out",
       onPress: onSignOut,
     },
+    {
+      label: "Sign out of all devices",
+      description: "Every phone, tablet and browser — this one too",
+      icon: "smartphone",
+      onPress: () => {
+        setSignOutAllError(null);
+        setConfirmAll(true);
+      },
+    },
+    {
+      label: "Delete my account",
+      description: "Ask the Legaleezi team to delete your account",
+      icon: "user-x",
+      onPress: () => {
+        setDeleteError(null);
+        setConfirmDelete(true);
+      },
+    },
   ];
 
   return (
@@ -252,6 +345,34 @@ export default function More() {
           </View>
         </ScrollView>
       </SafeAreaView>
+
+      <ConfirmSheet
+        visible={confirmAll}
+        onClose={() => setConfirmAll(false)}
+        onConfirm={onSignOutAll}
+        title="Sign out of all devices?"
+        message="You'll be signed out on every phone, tablet and browser using your account, including this one. Anyone on them — you included — will have to sign in again with your password."
+        confirmLabel="Sign out everywhere"
+        icon="log-out"
+        busy={signingOutAll}
+        error={signOutAllError}
+      />
+
+      <ConfirmSheet
+        visible={confirmDelete}
+        onClose={() => setConfirmDelete(false)}
+        onConfirm={onRequestDelete}
+        title="Delete your account?"
+        message={
+          isPartnerAdmin
+            ? "This asks the Legaleezi team to delete your account. You're the office admin, so that means your chambers' account and its records too. The team will contact you to confirm before anything is deleted."
+            : "This asks the Legaleezi team to delete your account and the personal data tied to it. Your office's cases stay with the office. The team will contact you to confirm before anything is deleted."
+        }
+        confirmLabel="Send request"
+        icon="user-x"
+        busy={requestingDelete}
+        error={deleteError}
+      />
     </View>
   );
 }

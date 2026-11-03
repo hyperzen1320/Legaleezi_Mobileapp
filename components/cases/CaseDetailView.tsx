@@ -19,6 +19,7 @@ import {
   ApiError,
   type PartnerCase,
 } from "../../lib/api";
+import { sendHearingNotice } from "../../lib/hearing-notice";
 import { useDeleteRequestFallback } from "../useDeleteRequestFallback";
 import { DateField, formatDateForDisplay } from "../CaseFields";
 import StatusCombobox from "./StatusCombobox";
@@ -655,62 +656,9 @@ function ContactCard({
     }
   }
 
-  async function openWhatsApp() {
-    const raw = (c.clientWhatsapp || c.clientPhone).replace(/\D/g, "");
-    if (!raw) return;
-    const wa = raw.length === 10 ? `91${raw}` : raw;
-
-    const dateStr = c.nextHearingDate
-      ? new Date(c.nextHearingDate).toLocaleDateString("en-IN", {
-          weekday: "long",
-          day: "numeric",
-          month: "long",
-          year: "numeric",
-        })
-      : "the date communicated separately";
-
-    const venue = [c.courtName, c.courtPlace].filter(Boolean).join(", ") ||
-      "the Hon'ble Court";
-    const office = officeName || "this office";
-    const matter = c.oppositeParty
-      ? `${c.clientName || "you"} vs ${c.oppositeParty}`
-      : c.caseNo;
-
-    const text = [
-      `Dear Mr./Ms. ${c.clientName || "Client"},`,
-      ``,
-      `Warm greetings from ${office}.`,
-      ``,
-      `This is to formally apprise you that the next hearing in your matter ${c.caseNo}` +
-        (c.oppositeParty ? ` (${matter})` : ``) +
-        ` has been scheduled on ${dateStr} before the ${venue}.`,
-      ``,
-      `You are kindly requested to ensure your presence on the said date and time, accompanied by all relevant documents previously discussed, so as to enable us to proceed with your matter without procedural complication. Non-attendance may give rise to adverse consequences, including the issuance of warrants or ex-parte orders, which we wish to avoid in your interest.`,
-      ``,
-      `For any clarification or to revisit the brief prior to the hearing, please feel free to contact our office at your convenience.`,
-      ``,
-      `Thank you for your continued cooperation and trust.`,
-      ``,
-      `Regards,`,
-      office,
-    ].join("\n");
-
-    const native = `whatsapp://send?phone=${wa}&text=${encodeURIComponent(text)}`;
-    const fallback = `https://wa.me/${wa}?text=${encodeURIComponent(text)}`;
-    try {
-      const can = await Linking.canOpenURL(native);
-      if (can) {
-        await Linking.openURL(native);
-      } else {
-        await Linking.openURL(fallback);
-      }
-    } catch {
-      try {
-        await Linking.openURL(fallback);
-      } catch {
-        Alert.alert("Couldn't open WhatsApp.");
-      }
-    }
+  // The office's own notice wording, the same one Hearing Track sends.
+  function openWhatsApp() {
+    void sendHearingNotice(c, officeName);
   }
 
   return (
@@ -904,14 +852,14 @@ function HistoryCard({
                   {h.status ? (
                     <View
                       className="self-start rounded px-1.5 py-0.5"
-                      style={{ backgroundColor: "#d2e6e7" }}
+                      style={{ borderWidth: 1, borderColor: "#8a5821" }}
                     >
                       <Text
                         className="text-[9px] uppercase"
                         style={{
                           fontFamily: "DMMono-Medium",
                           letterSpacing: 1.2,
-                          color: "#56a0a8",
+                          color: "#0a1124",
                         }}
                       >
                         {h.status}

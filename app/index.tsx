@@ -8,17 +8,19 @@ import Animated, {
   FadeInUp,
 } from "react-native-reanimated";
 import { useAuth } from "../lib/auth-context";
-import BootScreen from "../components/BootScreen";
+import BootScreen, { useLaunchHold } from "../components/BootScreen";
 
 export default function Home() {
   const { status } = useAuth();
+  const holding = useLaunchHold();
 
-  // Boot order: the native splash covers font loading; if the session
-  // probe is still in flight after that (slow network), the animated
-  // BootScreen takes over. Signed-in users skip the marketing page
-  // entirely and land on their workspace; guests get the landing.
-  if (status === "loading") {
-    return <BootScreen />;
+  // Boot order: the native splash covers font loading, then BootScreen
+  // carries the same logo on until 1.5s after launch — longer only if
+  // the session probe is still in flight (slow network). Signed-in users
+  // skip the marketing page entirely and land on their workspace; guests
+  // get the landing.
+  if (holding || status === "loading") {
+    return <BootScreen waiting={!holding} />;
   }
   if (status === "authenticated") {
     return <Redirect href="/dashboard" />;
@@ -54,7 +56,7 @@ function TopBar() {
         <View className="flex-row items-center gap-2.5">
           <BrandMark />
           <Text className="font-display text-[19px] tracking-tight text-ink leading-none">
-            Legalezi
+            Legaleezi
           </Text>
         </View>
         <Pressable

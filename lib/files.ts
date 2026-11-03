@@ -105,6 +105,28 @@ export function extOf(name: string): string {
   return dot >= 0 ? name.slice(dot + 1).toLowerCase() : "";
 }
 
+/** "Order 12.pdf" → { base: "Order 12", ext: "pdf" }. A leading dot is part
+ *  of the base, not an extension. */
+export function splitName(name: string): { base: string; ext: string } {
+  const dot = name.lastIndexOf(".");
+  return dot > 0
+    ? { base: name.slice(0, dot), ext: name.slice(dot + 1) }
+    : { base: name, ext: "" };
+}
+
+/** A typed name made safe to use as a filename: characters no file system
+ *  accepts become spaces, runs of spaces collapse, leading dots go. Empty
+ *  when nothing usable is left — callers keep the old name then. */
+export function cleanBaseName(input: string): string {
+  return input
+    .replace(/[\\/:*?"<>|\u0000-\u001f]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/^\.+/, "")
+    .slice(0, 120)
+    .trim();
+}
+
 export function mimeFor(
   filename: string,
   fallback = "application/octet-stream"
@@ -182,6 +204,20 @@ function freshDownloadDir(): Directory {
   const dir = new Directory(root, uid());
   dir.create({ intermediates: true });
   return dir;
+}
+
+/** Sign-out: delete every downloaded document now rather than at the
+ *  next launch, and forget the Android save folder the last person
+ *  picked — on a shared office phone, neither belongs to whoever signs
+ *  in next. */
+export function clearDownloads(): void {
+  sessionSaveDir = null;
+  try {
+    const root = new Directory(Paths.cache, DL_ROOT);
+    if (root.exists) root.delete();
+  } catch {
+    /* leftover lock on Android — the launch sweep catches it */
+  }
 }
 
 function discard(dir: Directory): void {

@@ -13,12 +13,31 @@ import {
   getToken,
   login as apiLogin,
   logout as apiLogout,
+  logoutAllDevices as apiLogoutAllDevices,
   setUnauthorizedHandler,
   type MobileUser,
   type MobilePartner,
 } from "./api";
+import { resetChatUnread } from "./chat-unread";
 import { readFeatures, type FeatureMap } from "./features";
+import { clearDownloads } from "./files";
+import { resetNoticeCache } from "./hearing-notice";
+import { resetNotificationCount } from "./notification-count";
 import { registerPushToken, resetBadge, revokePushToken } from "./push";
+
+// Everything the app holds outside React state about the office that was
+// signed in. The server already keeps each office to its own data; this
+// is the handset's half — on a shared office phone, the next advocate to
+// sign in (perhaps from another chambers) must not see a badge count, a
+// WhatsApp template or a downloaded paper left over from the last one.
+// Screens and their state unmount on sign-out by themselves.
+function forgetOffice(): void {
+  resetBadge();
+  resetChatUnread();
+  resetNotificationCount();
+  resetNoticeCache();
+  clearDownloads();
+}
 
 // Single source of truth for "who is signed in". Replaces the five-plus
 // screens that each called getMe() on focus and stored the result in
@@ -44,7 +63,7 @@ export type AuthState = {
   // Partner-side office admin (chambers owner). Drives "+ New user",
   // delete-request approve/reject, etc.
   isPartnerAdmin: boolean;
-  // Global Legalezi admin. Drives access to the (admin) shell.
+  // Global Legaleezi admin. Drives access to the (admin) shell.
   isGlobalAdmin: boolean;
   // Modules this chambers can reach. Empty map = everything on, which is
   // also what an older backend (sending no map at all) means.
@@ -58,6 +77,8 @@ type AuthContextValue = AuthState & {
   refresh: () => Promise<void>;
   login: (email: string, password: string) => Promise<MobileUser>;
   logout: () => Promise<void>;
+  // Throws (and leaves everyone signed in) when the server can't do it.
+  logoutAllDevices: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -124,7 +145,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     []
   );
 
+  // Every way out of a session lands here — Sign out, Sign out of all
+  // devices, a session that expired or was ended from another device —
+  // so this is where the last office's leftovers are cleared.
   const applyGuest = useCallback((error: string | null) => {
+    forgetOffice();
+    // Forget who this handset was registered for, too: whoever signs in
+    // next, even the same advocate again, registers afresh.
+    pushTokenRef.current = null;
+    pushForUserRef.current = null;
     if (!aliveRef.current) return;
     setState({ ...GUEST_STATE, error });
   }, []);
@@ -184,16 +213,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // revoke call is authenticated, and after apiLogout there's nothing
     // to authenticate it with.
     await revokePushToken(pushTokenRef.current);
-    pushTokenRef.current = null;
-    pushForUserRef.current = null;
-    resetBadge();
+    await apiLogout();
+    applyGuest(null);
+  }, [applyGuest]);
+
+  const logoutAllDevices = useCallback(async () => {
+    // Server first: if it can't end the other sessions, this one stays
+    // too, rather than leaving the advocate signed out here and still
+    // signed in on the phone they lost.
+    await apiLogoutAllDevices();
+    // No revoke call — this token is already dead, and the server dropped
+    // this device's push address along with every other one.
     await apiLogout();
     applyGuest(null);
   }, [applyGuest]);
 
   const value = useMemo<AuthContextValue>(
-    () => ({ ...state, refresh, login, logout }),
-    [state, refresh, login, logout]
+    () => ({ ...state, refresh, login, logout, logoutAllDevices }),
+    [state, refresh, login, logout, logoutAllDevices]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

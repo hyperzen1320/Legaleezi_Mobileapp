@@ -87,6 +87,14 @@ function maybeTeardown(): void {
   }
 }
 
+/** Sign-out: forget this office's count and drop any poll still in
+ *  flight — the next person on the handset starts from zero. */
+export function resetNotificationCount(): void {
+  inFlight++;
+  currentCount = 0;
+  subscribers.forEach((cb) => cb(currentCount));
+}
+
 /**
  * Subscribe a component to the delete-request count. Returns the
  * current value plus an imperative refresh — useful after the caller

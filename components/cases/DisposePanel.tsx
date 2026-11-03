@@ -28,11 +28,12 @@ import {
 
 // Disposal is the archive lever: status → "Disposed" stamps disposedAt
 // and moves the matter to the archive; any other status clears it. Both
-// transitions are office-admin only on the server, so the controls only
-// render for the admin. Closing a matter now captures the full disposal
-// record — recorded date, C.A. (certified-copy) status, a note and
-// whether the client has the copy — in one sheet, and an admin can edit
-// that record later without reopening the matter.
+// transitions are office-admin only on the server, so "Close the matter"
+// and "Reopen" only render for the admin. Closing a matter captures the
+// full disposal record — recorded date, C.A. (certified-copy) status, a
+// note and whether the client has the copy — in one sheet. Editing that
+// record later isn't a transition (the matter stays Disposed), so anyone
+// in the office can do it, the same as "Edit this matter".
 
 
 function fmtStamp(iso: string | null): string {
@@ -138,7 +139,12 @@ export default function DisposePanel({
             borderColor: "#e3d9c0",
           }}
         >
-          <View className="flex-row items-center justify-between">
+          {/* Wraps so the buttons drop below the stamp on narrow phones
+              instead of running off the card. */}
+          <View
+            className="flex-row flex-wrap items-center justify-between"
+            style={{ rowGap: 10, columnGap: 8 }}
+          >
             <View
               className="rounded-sm px-2 py-1"
               style={{
@@ -158,24 +164,27 @@ export default function DisposePanel({
                 Disposed · {fmtStamp(c.disposalDate ?? c.disposedAt)}
               </Text>
             </View>
-            {isPartnerAdmin ? (
-              <View className="flex-row items-center" style={{ gap: 8 }}>
-                <Pressable
-                  onPress={openSheet}
-                  disabled={busy}
-                  className="flex-row items-center gap-1.5 rounded-md px-3 py-2 active:opacity-80"
-                  style={{ backgroundColor: "#efe5d0" }}
-                  accessibilityRole="button"
-                  accessibilityLabel="Edit disposal details"
+            <View
+              className="flex-row items-center"
+              style={{ gap: 8, marginLeft: "auto" }}
+            >
+              <Pressable
+                onPress={openSheet}
+                disabled={busy}
+                className="flex-row items-center gap-1.5 rounded-md px-3 py-2 active:opacity-80"
+                style={{ backgroundColor: "#efe5d0" }}
+                accessibilityRole="button"
+                accessibilityLabel="Edit disposal details"
+              >
+                <Feather name="edit-2" size={13} color="#8a5821" />
+                <Text
+                  className="text-[12px]"
+                  style={{ fontFamily: "Manrope-SemiBold", color: "#8a5821" }}
                 >
-                  <Feather name="edit-2" size={13} color="#8a5821" />
-                  <Text
-                    className="text-[12px]"
-                    style={{ fontFamily: "Manrope-SemiBold", color: "#8a5821" }}
-                  >
-                    Edit
-                  </Text>
-                </Pressable>
+                  Edit
+                </Text>
+              </Pressable>
+              {isPartnerAdmin ? (
                 <Pressable
                   onPress={confirmReopen}
                   disabled={busy}
@@ -196,8 +205,8 @@ export default function DisposePanel({
                     Reopen
                   </Text>
                 </Pressable>
-              </View>
-            ) : null}
+              ) : null}
+            </View>
           </View>
 
           <DisposalSummary

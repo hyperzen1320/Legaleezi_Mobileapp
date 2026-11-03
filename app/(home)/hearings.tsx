@@ -18,18 +18,13 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 import {
   partnerListHearings,
   partnerUpdateCase,
-  partnerGetNoticeTemplate,
   partnerListCourts,
   ApiError,
   type HearingBucket,
   type PartnerCourt,
   type PartnerHearingItem,
 } from "../../lib/api";
-import {
-  renderNotice,
-  parseDateLocal,
-  type NoticeData,
-} from "../../lib/notice-template";
+import { sendHearingNotice } from "../../lib/hearing-notice";
 import { DateField } from "../../components/CaseFields";
 import StatusCombobox from "../../components/cases/StatusCombobox";
 import Sheet from "../../components/Sheet";
@@ -185,7 +180,6 @@ export default function Hearings() {
   const [items, setItems] = useState<PartnerHearingItem[]>([]);
   const [counts, setCounts] = useState({ today: 0, tomorrow: 0, pending: 0 });
   const [officeName, setOfficeName] = useState("");
-  const [template, setTemplate] = useState("");
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -275,12 +269,7 @@ export default function Hearings() {
     };
   }, [bucket, load]);
 
-  // The office's WhatsApp notice template — fetched once; the WhatsApp button
-  // fills it per matter. Falls back to the bilingual default if absent.
   useEffect(() => {
-    partnerGetNoticeTemplate()
-      .then((r) => setTemplate(r.template))
-      .catch(() => {});
     partnerListCourts()
       .then((r) => setCourts(r.courts))
       // No roster just means unnumbered options — not a reason to fail.
@@ -419,7 +408,6 @@ export default function Hearings() {
                       c={c}
                       isPartnerAdmin={isPartnerAdmin}
                       officeName={officeName}
-                      template={template}
                       saved={Boolean(savedPatches[c.id])}
                       onSaved={(patch) => applyPatch(c.id, patch)}
                       onDone={() => finishWith(c.id)}
@@ -440,7 +428,6 @@ export default function Hearings() {
                       c={c}
                       bucket={bucket}
                       officeName={officeName}
-                      template={template}
                       saved={Boolean(savedPatches[c.id])}
                       onUpdate={() => setUpdatingId(c.id)}
                     />
@@ -501,7 +488,6 @@ export default function Hearings() {
         item={updating}
         isPartnerAdmin={isPartnerAdmin}
         officeName={officeName}
-        template={template}
         onClose={() => setUpdatingId(null)}
         onSaved={(patch) => {
           if (updatingId) applyPatch(updatingId, patch);
@@ -522,7 +508,6 @@ function UpdateHearingSheet({
   item,
   isPartnerAdmin,
   officeName,
-  template,
   onClose,
   onSaved,
   onDone,
@@ -530,7 +515,6 @@ function UpdateHearingSheet({
   item: PartnerHearingItem | null;
   isPartnerAdmin: boolean;
   officeName: string;
-  template: string;
   onClose: () => void;
   onSaved: (patch: SavedPatch) => void;
   onDone: () => void;
@@ -751,7 +735,6 @@ function UpdateHearingSheet({
               <WhatsAppPill
                 c={item}
                 officeName={officeName}
-                template={template}
                 hasNumber={Boolean(item.clientWhatsapp || item.clientPhone)}
               />
             </View>
@@ -956,14 +939,12 @@ function ScheduledRow({
   c,
   bucket,
   officeName,
-  template,
   saved,
   onUpdate,
 }: {
   c: PartnerHearingItem;
   bucket: HearingBucket;
   officeName: string;
-  template: string;
   // This matter's hearing was updated in this session and the list hasn't
   // been refetched yet — the row already shows the new date and status.
   saved: boolean;
@@ -1021,14 +1002,14 @@ function ScheduledRow({
           {c.status ? (
             <View
               className="rounded-md px-1.5 py-0.5"
-              style={{ backgroundColor: "#d2e6e7" }}
+              style={{ borderWidth: 1, borderColor: "#8a5821" }}
             >
               <Text
                 className="text-[9px] uppercase"
                 style={{
                   fontFamily: "DMMono-Medium",
                   letterSpacing: 1.2,
-                  color: "#56a0a8",
+                  color: "#0a1124",
                 }}
               >
                 {c.status}
@@ -1089,7 +1070,6 @@ function ScheduledRow({
         <WhatsAppButton
           c={c}
           officeName={officeName}
-          template={template}
           hasNumber={hasWa}
         />
         <Pressable
@@ -1139,7 +1119,6 @@ function PendingCard({
   c,
   isPartnerAdmin,
   officeName,
-  template,
   saved,
   onSaved,
   onDone,
@@ -1147,7 +1126,6 @@ function PendingCard({
   c: PartnerHearingItem;
   isPartnerAdmin: boolean;
   officeName: string;
-  template: string;
   saved: boolean;
   onSaved: (patch: SavedPatch) => void;
   onDone: () => void;
@@ -1396,7 +1374,6 @@ function PendingCard({
         <WhatsAppPill
           c={c}
           officeName={officeName}
-          template={template}
           hasNumber={hasWa}
         />
       </View>
@@ -1454,17 +1431,15 @@ function CallButton({
 function WhatsAppButton({
   c,
   officeName,
-  template,
   hasNumber,
 }: {
   c: PartnerHearingItem;
   officeName: string;
-  template: string;
   hasNumber: boolean;
 }) {
   return (
     <Pressable
-      onPress={() => openWhatsApp(c, officeName, template, hasNumber)}
+      onPress={() => openWhatsApp(c, officeName, hasNumber)}
       className="h-10 w-10 rounded-full items-center justify-center active:opacity-80"
       style={{
         backgroundColor: hasNumber ? "#1faa4f" : "#9bbfa8",
@@ -1514,17 +1489,15 @@ function CallPill({
 function WhatsAppPill({
   c,
   officeName,
-  template,
   hasNumber,
 }: {
   c: PartnerHearingItem;
   officeName: string;
-  template: string;
   hasNumber: boolean;
 }) {
   return (
     <Pressable
-      onPress={() => openWhatsApp(c, officeName, template, hasNumber)}
+      onPress={() => openWhatsApp(c, officeName, hasNumber)}
       className="flex-1 rounded-md py-2.5 items-center justify-center flex-row gap-2 active:opacity-80"
       style={{
         backgroundColor: hasNumber ? "#1faa4f" : "#9bbfa8",
@@ -1573,7 +1546,6 @@ async function callClient(c: PartnerHearingItem, hasNumber: boolean) {
 async function openWhatsApp(
   c: PartnerHearingItem,
   officeName: string,
-  template: string,
   hasNumber: boolean
 ) {
   if (!hasNumber) {
@@ -1583,43 +1555,7 @@ async function openWhatsApp(
     );
     return;
   }
-  const raw = (c.clientWhatsapp || c.clientPhone).replace(/\D/g, "");
-  if (!raw) return;
-  const wa = raw.length === 10 ? `91${raw}` : raw;
-
-  // The wording comes from the office's editable bilingual template, filled
-  // with this matter's details (My Profile → Pre-filled WhatsApp message).
-  const data: NoticeData = {
-    caseNo: c.caseNo || "",
-    clientName: c.clientName || "",
-    cnr: c.cnr || "",
-    fileNo: c.fileNo || "",
-    status: c.status || "",
-    oppositeParty: c.oppositeParty || "",
-    courtName: c.courtName || "",
-    courtPlace: c.courtPlace || "",
-    lastHearingDate: parseDateLocal(c.lastHearingDate),
-    nextHearingDate: parseDateLocal(c.nextHearingDate),
-    officeName: officeName || "",
-  };
-  const text = renderNotice(template, data);
-
-  const native = `whatsapp://send?phone=${wa}&text=${encodeURIComponent(text)}`;
-  const fallback = `https://wa.me/${wa}?text=${encodeURIComponent(text)}`;
-  try {
-    const can = await Linking.canOpenURL(native);
-    if (can) {
-      await Linking.openURL(native);
-    } else {
-      await Linking.openURL(fallback);
-    }
-  } catch {
-    try {
-      await Linking.openURL(fallback);
-    } catch {
-      Alert.alert("Couldn't open WhatsApp.");
-    }
-  }
+  await sendHearingNotice(c, officeName);
 }
 
 /* ─── Empty ─── */

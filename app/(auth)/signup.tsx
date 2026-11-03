@@ -24,7 +24,7 @@ import { useAuth } from "../../lib/auth-context";
 // Step 1 writes NOTHING. The chambers details and a hash of the chosen
 // password ride along inside the one-time-code record and are only spent
 // once the address proves itself — so an abandoned or fake sign-up leaves
-// nothing behind for the Legalezi desk to clean up. Step 2 is what
+// nothing behind for the Legaleezi desk to clean up. Step 2 is what
 // creates the chambers, and it lands straight in the app.
 
 const CODE_LENGTH = 6;

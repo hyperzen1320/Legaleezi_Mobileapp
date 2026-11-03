@@ -296,13 +296,12 @@ function Hero({
       {/* Brand mark, top-right corner */}
       <View
         pointerEvents="none"
-        style={{ position: "absolute", right: 4, top: 8, opacity: 0.7 }}
+        style={{ position: "absolute", right: 4, top: 8 }}
       >
         <Image
           source={require("../../assets/logo.png")}
-          style={{ width: 30, height: 63 }}
+          style={{ width: 32, height: 63 }}
           resizeMode="contain"
-          tintColor="#ffffff"
         />
       </View>
 
@@ -663,14 +662,14 @@ function BoardRow({
         {c.status ? (
           <View
             className="rounded-md px-1.5 py-0.5"
-            style={{ backgroundColor: "#d2e6e7" }}
+            style={{ borderWidth: 1, borderColor: "#8a5821" }}
           >
             <Text
               className="text-[9px] uppercase"
               style={{
                 fontFamily: "DMMono-Medium",
                 letterSpacing: 1.2,
-                color: "#56a0a8",
+                color: "#0a1124",
               }}
             >
               {c.status}
