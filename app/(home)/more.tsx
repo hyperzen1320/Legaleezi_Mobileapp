@@ -14,6 +14,7 @@ import { Feather } from "@expo/vector-icons";
 import ConfirmSheet from "../../components/ConfirmSheet";
 import { ApiError, partnerCreateSupportTicket } from "../../lib/api";
 import { openSection } from "../../lib/navigation";
+import { withReturn } from "../../components/useReturnTo";
 import { useAuth } from "../../lib/auth-context";
 import { useChatUnread } from "../../lib/chat-unread";
 import { useNotificationCount } from "../../lib/notification-count";
@@ -151,7 +152,8 @@ export default function More() {
       feature: "disposed",
       description: "Closed matters archive",
       icon: "archive",
-      onPress: () => openSection("/(home)/cases/disposed"),
+      onPress: () =>
+        openSection(withReturn("/(home)/cases/disposed", "more") as never),
     },
     {
       label: "Users / Advocates",

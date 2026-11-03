@@ -1,11 +1,24 @@
 import { useEffect } from "react";
 import { Tabs, useRouter } from "expo-router";
-import { View, ActivityIndicator } from "react-native";
+import { View, ActivityIndicator, type TextStyle } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import { useAuth } from "../../lib/auth-context";
 import { useChatUnread } from "../../lib/chat-unread";
 import { isFeatureEnabled } from "../../lib/features";
+import { tabLabel as cappedLabel } from "../../components/TabLabel";
+
+// Four tabs at 10.5px still keeps every label on one line on the
+// narrowest phones.
+const TAB_LABEL_STYLE: TextStyle = {
+  fontSize: 10.5,
+  fontFamily: "DMMono-Medium",
+  letterSpacing: 0.6,
+  textTransform: "uppercase",
+  marginTop: 3,
+};
+
+const tabLabel = (text: string) => cappedLabel(text, TAB_LABEL_STYLE);
 
 export default function HomeLayout() {
   const router = useRouter();
@@ -98,15 +111,8 @@ export default function HomeLayout() {
           height: 66 + insets.bottom,
           paddingBottom: Math.max(insets.bottom, 12),
         },
-        // Four tabs instead of five leaves room to read them: 10.5px still
-        // keeps every label on one line on the narrowest phones.
-        tabBarLabelStyle: {
-          fontSize: 10.5,
-          fontFamily: "DMMono-Medium",
-          letterSpacing: 0.6,
-          textTransform: "uppercase",
-          marginTop: 3,
-        },
+        // Labels are rendered by tabLabel() above, which applies
+        // TAB_LABEL_STYLE itself.
         tabBarItemStyle: { paddingVertical: 2 },
         sceneStyle: { backgroundColor: "#f4ede0" },
       }}
@@ -114,7 +120,7 @@ export default function HomeLayout() {
       <Tabs.Screen
         name="home"
         options={{
-          tabBarLabel: "Dashboard",
+          tabBarLabel: tabLabel("Dashboard"),
           tabBarIcon: ({ color }) => (
             <Feather name="grid" size={20} color={color} />
           ),
@@ -125,7 +131,7 @@ export default function HomeLayout() {
         options={
           showCases
             ? {
-                tabBarLabel: "Cases",
+                tabBarLabel: tabLabel("Cases"),
                 tabBarIcon: ({ color }) => (
                   <Feather name="briefcase" size={20} color={color} />
                 ),
@@ -138,7 +144,7 @@ export default function HomeLayout() {
         options={
           showHearings
             ? {
-                tabBarLabel: "Hearings",
+                tabBarLabel: tabLabel("Hearings"),
                 tabBarIcon: ({ color }) => (
                   <Feather name="calendar" size={20} color={color} />
                 ),
@@ -149,7 +155,7 @@ export default function HomeLayout() {
       <Tabs.Screen
         name="more"
         options={{
-          tabBarLabel: "More",
+          tabBarLabel: tabLabel("More"),
           tabBarIcon: ({ color }) => (
             <Feather name="menu" size={20} color={color} />
           ),

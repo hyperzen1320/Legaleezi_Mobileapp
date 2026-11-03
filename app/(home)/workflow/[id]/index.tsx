@@ -36,6 +36,7 @@ import { BOARD_COLOR_STYLES } from "../../../../components/BoardColors";
 import { useBoardLiveFeed } from "../../../../lib/useBoardLiveFeed";
 import { useBoardPresence } from "../../../../lib/useBoardPresence";
 import { useAuth } from "../../../../lib/auth-context";
+import { useReturnTo } from "../../../../components/useReturnTo";
 
 import CardItem from "../../../../components/workflow/CardItem";
 import AddCardComposer from "../../../../components/workflow/AddCardComposer";
@@ -83,6 +84,8 @@ export default function BoardDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const boardId = String(id);
   const router = useRouter();
+  // Opened from the dashboard's bell: back returns to the dashboard.
+  const { goBack } = useReturnTo();
   // The bell opens the board's audit trail and the delete-request queue —
   // both the office admin's. It used to be on the header for everyone,
   // which is how juniors could read the activity feed.
@@ -616,7 +619,7 @@ export default function BoardDetail() {
           totalCards={totalCards}
           presenceCount={presence.length}
           unreadCount={live.unreadCount + pendingCount}
-          onBack={() => router.back()}
+          onBack={goBack}
           onExport={data ? () => setExporting(true) : null}
           onSettings={data ? () => setSettingsOpen(true) : null}
           onBell={
@@ -790,7 +793,7 @@ export default function BoardDetail() {
                 : prev
             )
           }
-          onDeleted={() => router.back()}
+          onDeleted={goBack}
           onDeleteNeedsRequest={(target) => setRequestTarget(target)}
         />
       ) : null}

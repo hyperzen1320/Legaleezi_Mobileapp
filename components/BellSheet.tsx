@@ -24,6 +24,7 @@ import {
 } from "../lib/api";
 import { useAuth } from "../lib/auth-context";
 import { openSection } from "../lib/navigation";
+import { withReturn } from "./useReturnTo";
 import { useNotificationCount } from "../lib/notification-count";
 
 // Bell-icon sheet. Replaces the web's BellDropdown for mobile.
@@ -317,7 +318,11 @@ export default function BellSheet({ visible, onClose }: Props) {
             onLoadMore={loadMoreActivity}
             onOpenBoard={(boardId) => {
               onClose();
-              openSection(`/(home)/workflow/${boardId}` as never);
+              // The bell only lives on the dashboard, so that's where
+              // the board's back should return.
+              openSection(
+                withReturn(`/(home)/workflow/${boardId}`, "home") as never
+              );
             }}
             onOpenLedger={() => {
               onClose();
