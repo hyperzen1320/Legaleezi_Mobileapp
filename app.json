@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Legaleezi",
-    "slug": "legaleasymobileapp",
+    "slug": "legaleezi",
     "scheme": "legaleasy",
     "version": "1.0.0",
     "orientation": "default",
@@ -59,9 +59,8 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "5034fb8e-b755-46e4-b7fe-df3880d50f21"
+        "projectId": "2f331c2b-6a09-4e4c-8a74-1bf7bbdea690"
       }
-    },
-    "owner": "demonking001"
+    }
   }
 }
