@@ -71,7 +71,7 @@ export async function boardPngToPdf(
         margin: 0 0 6pt 0; }
   img { width: ${w}pt; height: ${h}pt; display: block; }
 </style></head><body>
-  <p class="hd">${escapeHtml(boardTitle)} · ${dateStr} · Legalezi Work Flow</p>
+  <p class="hd">${escapeHtml(boardTitle)} · ${dateStr} · Legaleezi Work Flow</p>
   <img src="data:image/png;base64,${b64}" />
 </body></html>`;
 

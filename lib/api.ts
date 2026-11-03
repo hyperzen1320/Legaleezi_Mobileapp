@@ -112,16 +112,29 @@ export type DashboardData = {
 };
 
 /* ─────────── Token storage ─────────── */
+// THIS_DEVICE_ONLY: on iOS the session never travels in an iCloud or
+// iTunes backup or migrates to a new phone; it's readable only while the
+// phone is unlocked, as before. (Android ignores the option — the
+// secure-store backup rules and allowBackup: false keep it on the device.)
+const TOKEN_OPTIONS: SecureStore.SecureStoreOptions = {
+  keychainAccessible: SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
+};
+
 export async function setToken(token: string): Promise<void> {
-  await SecureStore.setItemAsync(TOKEN_KEY, token);
+  // Overwriting an existing item keeps its old accessibility on iOS, so
+  // clear it first to make sure the new setting applies.
+  await SecureStore.deleteItemAsync(TOKEN_KEY, TOKEN_OPTIONS).catch(
+    () => undefined
+  );
+  await SecureStore.setItemAsync(TOKEN_KEY, token, TOKEN_OPTIONS);
 }
 
 export async function getToken(): Promise<string | null> {
-  return SecureStore.getItemAsync(TOKEN_KEY);
+  return SecureStore.getItemAsync(TOKEN_KEY, TOKEN_OPTIONS);
 }
 
 export async function clearToken(): Promise<void> {
-  await SecureStore.deleteItemAsync(TOKEN_KEY);
+  await SecureStore.deleteItemAsync(TOKEN_KEY, TOKEN_OPTIONS);
 }
 
 /* ─────────── Fetch wrapper ─────────── */
@@ -286,6 +299,16 @@ export async function getMe(): Promise<{ user: MobileUser; partner: MobilePartne
 
 export async function logout(): Promise<void> {
   await clearToken();
+}
+
+/**
+ * Ends every session on this account — every phone, tablet and browser,
+ * this one included — and drops every push address registered to it.
+ * Needs the server change in docs/SIGN_OUT_ALL_DEVICES.md; a server
+ * without it answers 404 and nothing is signed out.
+ */
+export async function logoutAllDevices(): Promise<void> {
+  await api<{ ok: true }>("/api/mobile/logout-all", { method: "POST" });
 }
 
 /**
@@ -609,7 +632,9 @@ export const CASE_SORT_OPTIONS: { key: CaseSort; label: string; hint: string }[]
     {
       key: "hearing",
       label: "Next hearing",
-      hint: "Soonest date first, undated matters leading.",
+      // Court-within-a-day needs the server change in
+      // docs/CASE_VAULT_DOWNLOAD_AND_ORDER.md.
+      hint: "Soonest date first, then court by Court Hub number. Undated matters lead.",
     },
     { key: "caseNo", label: "Case number", hint: "Plain alphabetical." },
   ];

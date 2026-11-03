@@ -41,6 +41,7 @@ import {
   CASE_EXPORT_DEFAULT_KEYS,
   exportCases,
 } from "../../../lib/exports";
+import { FileOpError } from "../../../lib/files";
 import { useDeleteRequestFallback } from "../../../components/useDeleteRequestFallback";
 
 const PAGE_SIZE = 50;
@@ -373,7 +374,9 @@ export default function CaseVault() {
         ) : (
           <TopBar
             count={total}
-            onExport={isPartnerAdmin ? () => setExporting(true) : null}
+            // Everyone in chambers can download the rolls. Selecting rows
+            // stays the admin's, since the same mode offers bulk delete.
+            onExport={() => setExporting(true)}
             onImport={() => setImportOpen(true)}
             onSelect={isPartnerAdmin ? () => enterSelection() : null}
           />
@@ -676,18 +679,34 @@ export default function CaseVault() {
           catalog: CASE_EXPORT_COLUMNS.filter((c) => c.key !== "disposedAt"),
           defaultKeys: CASE_EXPORT_DEFAULT_KEYS,
         }}
-        run={(format, columnKeys) =>
-          exportCases(format, {
-            filters: params,
-            columns: columnKeys,
-            // A concrete tick-list exports exactly those rows; "select all
-            // matching" falls back to the filter query (the whole set).
-            selectedIds:
-              selectionMode && !selectAllMatching && selectedIds.size > 0
-                ? [...selectedIds]
-                : undefined,
-          })
-        }
+        run={async (format, columnKeys) => {
+          try {
+            return await exportCases(format, {
+              filters: params,
+              columns: columnKeys,
+              // A concrete tick-list exports exactly those rows; "select all
+              // matching" falls back to the filter query (the whole set).
+              selectedIds:
+                selectionMode && !selectAllMatching && selectedIds.size > 0
+                  ? [...selectedIds]
+                  : undefined,
+            });
+          } catch (err) {
+            // Until the server opens exports to the whole office it still
+            // refuses everyone but the admin — say that plainly rather
+            // than show a bare "Forbidden".
+            if (
+              !isPartnerAdmin &&
+              err instanceof FileOpError &&
+              err.status === 403
+            ) {
+              throw new Error(
+                "Downloading is still limited to the office admin. Ask them to download it for now."
+              );
+            }
+            throw err;
+          }
+        }}
       />
 
       <CaseFilterSheet
@@ -1109,14 +1128,14 @@ function CaseCard({
         {c.status ? (
           <View
             className="rounded-md px-1.5 py-0.5 ml-auto"
-            style={{ backgroundColor: "#d2e6e7" }}
+            style={{ borderWidth: 1, borderColor: "#8a5821" }}
           >
             <Text
               className="text-[9px] uppercase"
               style={{
                 fontFamily: "DMMono-Medium",
                 letterSpacing: 1.2,
-                color: "#56a0a8",
+                color: "#0a1124",
               }}
             >
               {c.status}

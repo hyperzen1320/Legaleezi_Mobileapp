@@ -25,7 +25,7 @@ import {
 } from "../../lib/api";
 import { downloadAuthorized } from "../../lib/files";
 
-// Tutorials — videos / images / PDFs uploaded by the Legalezi team (global
+// Tutorials — videos / images / PDFs uploaded by the Legaleezi team (global
 // admin). Videos play in-app via expo-video; images open full-screen; PDFs
 // download and open in the system viewer. All fetch the binary with the
 // bearer token (the endpoint is auth-gated + range-enabled for seeking).
@@ -188,7 +188,7 @@ export default function Tutorials() {
                   className="mt-2 text-[13px] text-app-fg-muted text-center"
                   style={{ fontFamily: "Manrope", lineHeight: 20 }}
                 >
-                  Walkthrough videos and guides from the Legalezi team will
+                  Walkthrough videos and guides from the Legaleezi team will
                   appear here.
                 </Text>
               </View>

@@ -1,6 +1,6 @@
 <div align="center">
 
-# 📱 Legalezi — Mobile
+# 📱 Legaleezi — Mobile
 
 ### _The advocate's pocket chambers._
 
@@ -24,7 +24,7 @@
 
 ## 🪶 What is this?
 
-The mobile half of **Legalezi**. Same office, same Mongo, same role-based access — built natively for the advocate who's always between courts.
+The mobile half of **Legaleezi**. Same office, same Mongo, same role-based access — built natively for the advocate who's always between courts.
 
 **Web counterpart** → [`LegalEasy`](https://github.com/hyperzen1320/LegalEasy)
 
@@ -95,7 +95,7 @@ npm install
 ```
 
 ### 2. Point at the API
-The mobile app talks to the Legalezi web backend. `lib/config.ts` resolves the base URL automatically — **no code edits needed**:
+The mobile app talks to the Legaleezi web backend. `lib/config.ts` resolves the base URL automatically — **no code edits needed**:
 
 | Priority | Source | When it applies |
 |---|---|---|
@@ -215,7 +215,7 @@ delete request** and a **decision on one**.
 Two things it needs that code can't provide:
 
 1. **FCM V1 credentials on the EAS project** — a Firebase project for
-   `com.legalezi.legaleasy` with its service-account JSON uploaded via
+   `com.legaleezi.app` with its service-account JSON uploaded via
    `eas credentials`. Without it, Expo accepts the send and Android delivers
    nothing.
 2. **A dev/production build.** `expo-notifications` is a native module, so

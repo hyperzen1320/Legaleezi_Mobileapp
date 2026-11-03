@@ -82,6 +82,15 @@ function maybeTeardown(): void {
   }
 }
 
+/** Sign-out: forget this office's counts, and drop any poll still in
+ *  flight, so the next person on the handset never sees them — not even
+ *  for the moment before their own first poll lands. */
+export function resetChatUnread(): void {
+  inFlight++;
+  current = ZERO;
+  subscribers.forEach((cb) => cb(current));
+}
+
 /** Subscribe to office chat unread counts; `refresh` forces a re-poll
  *  (call after marking a room read so badges catch up instantly). */
 export function useChatUnread(): { unread: ChatUnread; refresh: () => void } {

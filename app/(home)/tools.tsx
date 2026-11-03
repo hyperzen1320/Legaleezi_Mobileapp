@@ -4,7 +4,7 @@ import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 
-// Tools — a home for handy practice utilities curated by the Legalezi team.
+// Tools — a home for handy practice utilities curated by the Legaleezi team.
 // The tool set is managed centrally (global admin) and will populate here;
 // this is the shell reachable from More → Tools.
 export default function Tools() {
@@ -63,7 +63,7 @@ export default function Tools() {
             style={{ fontFamily: "Manrope", lineHeight: 20 }}
           >
             Handy utilities for your practice will appear here, curated by the
-            Legalezi team.
+            Legaleezi team.
           </Text>
         </View>
       </SafeAreaView>

@@ -82,6 +82,7 @@ export default function RequestDeleteSheet({
         reset();
         onClose();
       }}
+      statusBarTranslucent
     >
       <Pressable
         onPress={() => {
@@ -91,8 +92,14 @@ export default function RequestDeleteSheet({
         className="flex-1"
         style={{ backgroundColor: "rgba(10,17,36,0.55)" }}
       >
+        {/* "height" on Android too. With edge-to-edge on, the system no
+            longer resizes a Modal's window for the keyboard (and the app's
+            "pan" mode only moves full screens), so leaving Android
+            undefined left the reason box under the keyboard. Same
+            approach as the shared Sheet; statusBarTranslucent keeps this
+            view's frame in the same coordinates as the keyboard's. */}
         <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
           style={{ flex: 1, justifyContent: "flex-end" }}
         >
           <Pressable
