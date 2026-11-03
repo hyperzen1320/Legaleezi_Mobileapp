@@ -25,6 +25,7 @@ import { useNotificationCount } from "../../lib/notification-count";
 import { LiveOverview } from "../../components/LiveOverview";
 import BellSheet from "../../components/BellSheet";
 import { caseHref } from "../../components/cases/useCaseOrigin";
+import { withReturn } from "../../components/useReturnTo";
 import { openSection } from "../../lib/navigation";
 
 export default function PartnerHome() {
@@ -742,7 +743,9 @@ function EmptyBoard() {
         chronological order.
       </Text>
       <Pressable
-        onPress={() => router.push("/(home)/cases/new")}
+        onPress={() =>
+          router.push(withReturn("/(home)/cases/new", "home") as never)
+        }
         className="mt-5 rounded-md flex-row items-center gap-2 px-5 py-2.5 active:opacity-90"
         style={{
           backgroundColor: "#0a1124",

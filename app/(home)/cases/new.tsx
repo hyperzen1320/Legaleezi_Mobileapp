@@ -13,9 +13,14 @@ import {
 import CaseForm, {
   type CaseFormInitial,
 } from "../../../components/cases/CaseForm";
+import { useReturnTo } from "../../../components/useReturnTo";
+import { caseHref } from "../../../components/cases/useCaseOrigin";
 
 export default function NewCase() {
   const router = useRouter();
+  // Opened from the dashboard: back, and the saved matter's own back,
+  // return to the dashboard rather than the Case Vault.
+  const { origin, goBack } = useReturnTo();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -63,7 +68,9 @@ export default function NewCase() {
     setSubmitting(true);
     try {
       const res = await partnerCreateCase(payload);
-      router.replace(`/(home)/cases/${res.id}` as never);
+      router.replace(
+        caseHref(res.id, origin === "home" ? "home" : undefined) as never
+      );
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Couldn't save");
       setSubmitting(false);
@@ -74,7 +81,7 @@ export default function NewCase() {
     <View className="flex-1 bg-app-canvas">
       <StatusBar style="dark" backgroundColor="#f4ede0" />
       <SafeAreaView className="flex-1" edges={["top"]}>
-        <TopBar />
+        <TopBar onBack={goBack} />
         {loadingInitial ? (
           <View className="flex-1 items-center justify-center">
             <ActivityIndicator color="#c5853a" size="large" />
@@ -96,12 +103,11 @@ export default function NewCase() {
   );
 }
 
-function TopBar() {
-  const router = useRouter();
+function TopBar({ onBack }: { onBack: () => void }) {
   return (
     <View className="border-b border-app-edge bg-app-canvas px-5 py-3.5 flex-row items-center gap-3">
       <Pressable
-        onPress={() => router.back()}
+        onPress={onBack}
         hitSlop={8}
         className="active:opacity-50"
       >

@@ -20,10 +20,12 @@ export type CaseOrigin = {
   label: string;
 };
 
-/** Query the case route reads: `?from=hearings&bucket=pending`, `?from=home`. */
+/** Query the case route reads: `?from=hearings&bucket=pending`, `?from=home`.
+ *  `disposed` only changes the top bar's label — the archive is in the
+ *  same stack, so plain back already returns to it. */
 export function caseHref(
   id: string,
-  from?: "hearings" | "home",
+  from?: "hearings" | "home" | "disposed",
   bucket?: string
 ): string {
   const base = `/(home)/cases/${id}`;
@@ -86,5 +88,8 @@ export function useCaseOrigin(): { label: string; goBack: () => void } {
     }, [origin, goBack])
   );
 
-  return { label: origin?.label ?? "Case Vault", goBack };
+  return {
+    label: origin?.label ?? (from === "disposed" ? "Disposed Cases" : "Case Vault"),
+    goBack,
+  };
 }

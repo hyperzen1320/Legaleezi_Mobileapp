@@ -1,8 +1,19 @@
 import { useEffect } from "react";
 import { Tabs, useRouter } from "expo-router";
-import { View, ActivityIndicator } from "react-native";
+import { View, ActivityIndicator, type TextStyle } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useAuth } from "../../lib/auth-context";
+import { tabLabel as cappedLabel } from "../../components/TabLabel";
+
+const TAB_LABEL_STYLE: TextStyle = {
+  fontSize: 10,
+  fontFamily: "PlexMono-Medium",
+  letterSpacing: 1.5,
+  textTransform: "uppercase",
+  marginTop: 4,
+};
+
+const tabLabel = (text: string) => cappedLabel(text, TAB_LABEL_STYLE);
 
 export default function AdminLayout() {
   const router = useRouter();
@@ -49,13 +60,8 @@ export default function AdminLayout() {
           borderTopWidth: 1,
           paddingTop: 6,
         },
-        tabBarLabelStyle: {
-          fontSize: 10,
-          fontFamily: "PlexMono-Medium",
-          letterSpacing: 1.5,
-          textTransform: "uppercase",
-          marginTop: 4,
-        },
+        // Labels are rendered by tabLabel() above, so they can't outgrow
+        // the bar when the phone's text size is turned up.
         tabBarItemStyle: { paddingVertical: 4 },
         sceneStyle: { backgroundColor: "#fafaf7" },
       }}
@@ -63,7 +69,7 @@ export default function AdminLayout() {
       <Tabs.Screen
         name="dashboard"
         options={{
-          tabBarLabel: "Home",
+          tabBarLabel: tabLabel("Home"),
           tabBarIcon: ({ color, focused }) => (
             <Feather
               name="grid"
@@ -77,7 +83,7 @@ export default function AdminLayout() {
       <Tabs.Screen
         name="partners"
         options={{
-          tabBarLabel: "Partners",
+          tabBarLabel: tabLabel("Partners"),
           tabBarIcon: ({ color, focused }) => (
             <Feather
               name="users"
@@ -91,7 +97,7 @@ export default function AdminLayout() {
       <Tabs.Screen
         name="subscriptions"
         options={{
-          tabBarLabel: "Plans",
+          tabBarLabel: tabLabel("Plans"),
           tabBarIcon: ({ color, focused }) => (
             <Feather
               name="credit-card"
@@ -105,7 +111,7 @@ export default function AdminLayout() {
       <Tabs.Screen
         name="activity"
         options={{
-          tabBarLabel: "Activity",
+          tabBarLabel: tabLabel("Activity"),
           tabBarIcon: ({ color, focused }) => (
             <Feather
               name="activity"

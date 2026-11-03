@@ -34,6 +34,8 @@ import {
   exportCases,
 } from "../../../lib/exports";
 import { useDeleteRequestFallback } from "../../../components/useDeleteRequestFallback";
+import { useReturnTo } from "../../../components/useReturnTo";
+import { caseHref } from "../../../components/cases/useCaseOrigin";
 
 // The archive — closed matters, newest disposal first (server caps at
 // 500). Reopening moves the matter back to the vault by flipping its
@@ -44,6 +46,9 @@ export default function DisposedCases() {
   const { offerDeleteRequest, deleteRequestSheet } =
     useDeleteRequestFallback();
   const router = useRouter();
+  // Opened from More: back returns to More, not to the Case Vault this
+  // screen happens to sit on top of.
+  const { goBack } = useReturnTo();
   const { isPartnerAdmin } = useAuth();
   const [cases, setCases] = useState<DisposedCase[]>([]);
   const [loading, setLoading] = useState(true);
@@ -224,7 +229,7 @@ export default function DisposedCases() {
         {/* Top bar */}
         <View className="border-b border-app-edge bg-app-canvas px-4 py-3 flex-row items-center" style={{ gap: 10 }}>
           <Pressable
-            onPress={() => router.back()}
+            onPress={goBack}
             hitSlop={10}
             className="active:opacity-50 h-9 w-9 items-center justify-center rounded-md"
             style={{ backgroundColor: "#ffffff" }}
@@ -458,7 +463,7 @@ export default function DisposedCases() {
                       : null
                   }
                   onOpen={() =>
-                    router.push(`/(home)/cases/${item.id}` as never)
+                    router.push(caseHref(item.id, "disposed") as never)
                   }
                 />
               )}
