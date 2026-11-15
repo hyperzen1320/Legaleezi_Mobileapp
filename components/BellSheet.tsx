@@ -23,7 +23,7 @@ import {
   type ActivityHistoryRow,
 } from "../lib/api";
 import { useAuth } from "../lib/auth-context";
-import { openSection } from "../lib/navigation";
+import { openInTab, openSection } from "../lib/navigation";
 import { withReturn } from "./useReturnTo";
 import { useNotificationCount } from "../lib/notification-count";
 
@@ -320,7 +320,7 @@ export default function BellSheet({ visible, onClose }: Props) {
               onClose();
               // The bell only lives on the dashboard, so that's where
               // the board's back should return.
-              openSection(
+              openInTab(
                 withReturn(`/(home)/workflow/${boardId}`, "home") as never
               );
             }}

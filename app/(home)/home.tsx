@@ -26,7 +26,7 @@ import { LiveOverview } from "../../components/LiveOverview";
 import BellSheet from "../../components/BellSheet";
 import { caseHref } from "../../components/cases/useCaseOrigin";
 import { withReturn } from "../../components/useReturnTo";
-import { openSection } from "../../lib/navigation";
+import { openInTab, openSection } from "../../lib/navigation";
 
 export default function PartnerHome() {
   const { user, partner, isPartnerAdmin } = useAuth();
@@ -294,14 +294,16 @@ function Hero({
         elevation: 6,
       }}
     >
-      {/* Brand mark, top-right corner */}
+      {/* Brand mark, top-right corner — tinted the same cream (app-ivory)
+          as the greeting beside it. The artwork is a single-colour mark on
+          a transparent ground, so the tint recolours it cleanly. */}
       <View
         pointerEvents="none"
         style={{ position: "absolute", right: 4, top: 8 }}
       >
         <Image
           source={require("../../assets/logo.png")}
-          style={{ width: 32, height: 63 }}
+          style={{ width: 32, height: 63, tintColor: "#f5ebd6" }}
           resizeMode="contain"
         />
       </View>
@@ -632,7 +634,6 @@ function BoardRow({
 }: {
   c: PartnerDashboardData["todaysBoard"][0];
 }) {
-  const router = useRouter();
   const next = c.nextHearingDate ? new Date(c.nextHearingDate) : null;
   const isToday =
     next && next.toDateString() === new Date().toDateString();
@@ -641,7 +642,7 @@ function BoardRow({
     <Pressable
       // Say where this came from, so backing out of the dossier returns
       // to the dashboard rather than stranding the reader in the vault.
-      onPress={() => router.push(caseHref(c.id, "home") as never)}
+      onPress={() => openInTab(caseHref(c.id, "home") as never)}
       className="rounded-xl bg-app-paper p-4 active:opacity-90"
       style={{
         shadowColor: "#0a1124",
@@ -712,7 +713,6 @@ function BoardRow({
 }
 
 function EmptyBoard() {
-  const router = useRouter();
   return (
     <View
       className="rounded-xl px-5 py-9 items-center"
@@ -744,7 +744,7 @@ function EmptyBoard() {
       </Text>
       <Pressable
         onPress={() =>
-          router.push(withReturn("/(home)/cases/new", "home") as never)
+          openInTab(withReturn("/(home)/cases/new", "home") as never)
         }
         className="mt-5 rounded-md flex-row items-center gap-2 px-5 py-2.5 active:opacity-90"
         style={{

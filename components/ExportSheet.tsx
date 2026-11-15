@@ -23,9 +23,10 @@ import type { DownloadedFile } from "../lib/files";
 // offer and what `run` actually hits; the sheet owns the configure →
 // generating → ready flow and the share / save / print handoff.
 //
-// Export endpoints are office-admin gated on the server; callers hide
-// the entry button for everyone else (the 403 message still surfaces
-// here if something slips through).
+// The disposed-archive export is office-admin gated on the server, and
+// its caller hides the entry button for everyone else (the 403 message
+// still surfaces here if something slips through). The Case Vault and
+// hearing track exports are open to every member.
 
 export type ExportSheetProps = {
   visible: boolean;

@@ -34,6 +34,7 @@ import DisposalFields, {
   type DisposalRecord,
 } from "../../components/cases/DisposalFields";
 import { useDeleteRequestFallback } from "../../components/useDeleteRequestFallback";
+import { openInTab } from "../../lib/navigation";
 import CourtFilter, {
   buildCourtOptions,
   courtKeyOf,
@@ -321,15 +322,13 @@ export default function Hearings() {
     <View className="flex-1 bg-app-canvas">
       <StatusBar style="dark" backgroundColor="#f4ede0" />
       <SafeAreaView className="flex-1" edges={["top"]}>
+        {/* Everyone in the office can download the cause list — it's the
+            same rows they're already looking at. */}
         <TopBar
-          onExport={
-            isPartnerAdmin
-              ? () => {
-                  setExportBucket(bucket);
-                  setExporting(true);
-                }
-              : null
-          }
+          onExport={() => {
+            setExportBucket(bucket);
+            setExporting(true);
+          }}
         />
         <Segmented bucket={bucket} onChange={changeBucket} counts={counts} />
 
@@ -950,7 +949,6 @@ function ScheduledRow({
   saved: boolean;
   onUpdate: () => void;
 }) {
-  const router = useRouter();
   const courtLine = [c.courtName, c.courtPlace].filter(Boolean).join(", ");
   const hasPhone = Boolean(c.clientPhone || c.clientWhatsapp);
   const hasWa = Boolean(c.clientWhatsapp || c.clientPhone);
@@ -958,7 +956,7 @@ function ScheduledRow({
   function openCase() {
     // Carry the bucket along so backing out of the dossier returns to
     // this list, on this tab — not to the Case Vault.
-    router.push(caseHref(c.id, "hearings", bucket) as never);
+    openInTab(caseHref(c.id, "hearings", bucket) as never);
   }
 
   return (
@@ -1130,7 +1128,6 @@ function PendingCard({
   onSaved: (patch: SavedPatch) => void;
   onDone: () => void;
 }) {
-  const router = useRouter();
   const [date, setDate] = useState("");
   const [status, setStatus] = useState("");
   const [disposal, setDisposal] = useState<DisposalRecord>(EMPTY_DISPOSAL);
@@ -1189,7 +1186,7 @@ function PendingCard({
       <View className="flex-row items-start gap-3">
         <Pressable
           onPress={() =>
-            router.push(caseHref(c.id, "hearings", "pending") as never)
+            openInTab(caseHref(c.id, "hearings", "pending") as never)
           }
           className="flex-1 active:opacity-70"
         >
