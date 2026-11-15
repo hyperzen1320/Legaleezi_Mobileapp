@@ -13,7 +13,7 @@ import { useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import ConfirmSheet from "../../components/ConfirmSheet";
 import { ApiError, partnerCreateSupportTicket } from "../../lib/api";
-import { openSection } from "../../lib/navigation";
+import { openInTab, openSection } from "../../lib/navigation";
 import { withReturn } from "../../components/useReturnTo";
 import { useAuth } from "../../lib/auth-context";
 import { useChatUnread } from "../../lib/chat-unread";
@@ -153,7 +153,7 @@ export default function More() {
       description: "Closed matters archive",
       icon: "archive",
       onPress: () =>
-        openSection(withReturn("/(home)/cases/disposed", "more") as never),
+        openInTab(withReturn("/(home)/cases/disposed", "more") as never),
     },
     {
       label: "Users / Advocates",

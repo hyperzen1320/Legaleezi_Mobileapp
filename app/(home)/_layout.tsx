@@ -88,8 +88,11 @@ export default function HomeLayout() {
         //
         // popToTopOnBlur unwinds a tab's stack the moment you leave it,
         // so a tab can only ever hold depth you created while you were
-        // standing in it. One flag, and the whole class of stale-screen
-        // bugs stops being possible.
+        // standing in it. It can only unwind to the stack's bottom screen,
+        // though, so a stack other tabs open into declares its list as an
+        // anchor and those openers use openInTab() (lib/navigation).
+        // Otherwise a fresh tab's bottom screen is whatever it was first
+        // opened on, e.g. Disposed Cases sitting under the Case Vault.
         popToTopOnBlur: true,
         // Cross-fade + drift between tabs instead of a hard card swap.
         animation: "shift",

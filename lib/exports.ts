@@ -145,7 +145,7 @@ export const HEARING_EXPORT_BUCKETS: {
   { key: "all", label: "All" },
 ];
 
-/** GET /api/app/hearings/export — office-admin only (server-enforced). */
+/** GET /api/app/hearings/export — open to every member of the office. */
 export async function exportHearings(
   format: ExportFormat,
   bucket: HearingExportBucket,
